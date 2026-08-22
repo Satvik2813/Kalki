@@ -70,9 +70,33 @@ KALKI_MODEL_PROVIDER=anthropic   ANTHROPIC_API_KEY=...      # or openai / omniro
 KALKI_MEMORY_BACKEND=supabase    SUPABASE_DB_URL=postgres://...
 ```
 
-The core **never depends on OmniRoute directly**: if it is unreachable, the
-registry falls back to a direct provider, then to the mock (see
-`models/registry.py`).
+### OmniRoute gateway
+
+[OmniRoute](https://github.com/diegosouzapw/OmniRoute) is a free AI gateway
+exposing an **OpenAI-compatible** API at `<base_url>/v1`. Start it and point
+KALKI at it:
+
+```bash
+npm install -g omniroute && omniroute        # boots on http://localhost:20128
+```
+
+```bash
+KALKI_MODEL_PROVIDER=omniroute
+OMNIROUTE_BASE_URL=http://localhost:20128
+KALKI_MODEL_NAME=auto            # keyless free routing; or a specific model
+OMNIROUTE_API_KEY=               # optional (free providers need no key)
+```
+
+KALKI talks to OmniRoute only through `OmniRouteProvider` behind
+`ModelProvider`; the reachability probe hits `/v1/models` (override with
+`OMNIROUTE_HEALTH_PATH`). The core **never depends on OmniRoute directly**: if
+it is unreachable, the registry falls back to a direct provider, then to the
+mock (see `models/registry.py`). Verify a live server independently:
+
+```bash
+curl http://localhost:20128/v1/chat/completions -H "Content-Type: application/json" \
+  -d '{"model":"auto","messages":[{"role":"user","content":"Hello!"}]}'
+```
 
 ## Repository layout
 

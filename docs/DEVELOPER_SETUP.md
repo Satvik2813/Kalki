@@ -42,7 +42,11 @@ uvicorn api.app:app --reload           # API at http://127.0.0.1:8000/docs
 ```bash
 KALKI_MODEL_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-...   python scripts/demo.py
 # OmniRoute gateway (auto-falls back to direct/mock if unreachable):
-KALKI_MODEL_PROVIDER=omniroute OMNIROUTE_BASE_URL=http://localhost:8080
+#   start it:  npm install -g omniroute && omniroute   # -> http://localhost:20128
+KALKI_MODEL_PROVIDER=omniroute OMNIROUTE_BASE_URL=http://localhost:20128 KALKI_MODEL_NAME=auto
+# Optional: OMNIROUTE_API_KEY=<key>   OMNIROUTE_HEALTH_PATH=/api/monitoring/health
+# Enable the gated live integration test:
+#   OMNIROUTE_INTEGRATION=1 OMNIROUTE_BASE_URL=http://localhost:20128 python -m pytest tests/test_omniroute.py
 ```
 Install SDKs as needed: `pip install 'kalki[anthropic]'` / `'kalki[openai]'`.
 

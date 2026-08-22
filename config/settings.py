@@ -45,8 +45,10 @@ class Settings:
     # Model routing
     model_provider: str = "mock"
     model_name: str = "claude-sonnet-4"
-    omniroute_base_url: str = "http://localhost:8080"
+    omniroute_base_url: str = "http://localhost:20128"
     omniroute_api_key: str = ""
+    omniroute_health_path: str = ""   # blank -> provider probes /v1/models
+    huggingface_api_key: str = ""
     anthropic_api_key: str = ""
     openai_api_key: str = ""
     gemini_api_key: str = ""
@@ -81,8 +83,10 @@ class Settings:
         return cls(
             model_provider=_get("KALKI_MODEL_PROVIDER", "mock").lower(),
             model_name=_get("KALKI_MODEL_NAME", "claude-sonnet-4"),
-            omniroute_base_url=_get("OMNIROUTE_BASE_URL", "http://localhost:8080"),
+            omniroute_base_url=_get("OMNIROUTE_BASE_URL", "http://localhost:20128"),
             omniroute_api_key=_get("OMNIROUTE_API_KEY", ""),
+            omniroute_health_path=_get("OMNIROUTE_HEALTH_PATH", ""),
+            huggingface_api_key=_get("HUGGINGFACE_API_KEY", _get("HF_TOKEN", "")),
             anthropic_api_key=_get("ANTHROPIC_API_KEY", ""),
             openai_api_key=_get("OPENAI_API_KEY", ""),
             gemini_api_key=_get("GEMINI_API_KEY", ""),
