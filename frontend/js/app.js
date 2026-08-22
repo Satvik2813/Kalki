@@ -589,6 +589,22 @@ class KalkiApp {
       btnEnter.addEventListener('click', () => this.showView('auth-view'));
     }
 
+    const btnSkipLanding = document.getElementById('btn-skip-landing');
+    if (btnSkipLanding) {
+      btnSkipLanding.addEventListener('click', () => {
+        this.renderUserBadge({ name: 'Guest Developer (Local)', email: 'guest@local' });
+        this.showView('workspace-view');
+      });
+    }
+
+    const btnAuthSkip = document.getElementById('btn-auth-skip');
+    if (btnAuthSkip) {
+      btnAuthSkip.addEventListener('click', () => {
+        this.renderUserBadge({ name: 'Guest Developer (Local)', email: 'guest@local' });
+        this.showView('workspace-view');
+      });
+    }
+
     if (btnGuest) {
       btnGuest.addEventListener('click', async () => {
         try {
