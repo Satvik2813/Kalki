@@ -19,6 +19,14 @@ Events. Both replay history, so a late subscriber never misses events.
 """
 from __future__ import annotations
 
+import os
+import sys
+
+# Ensure project root is in sys.path when running as a Serverless Function on Vercel
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
 import asyncio
 import json
 from typing import Optional
