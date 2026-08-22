@@ -46,7 +46,15 @@ class KalkiService:
         self.settings = settings or get_settings()
         self.provider = get_provider(settings=self.settings)
         self.memory = MemoryManager(settings=self.settings)
-        self.registry = registry or register_builtins(ToolRegistry())
+        if registry:
+            self.registry = registry
+        else:
+            self.registry = register_builtins(ToolRegistry())
+            try:
+                from tools import register_all_tools
+                register_all_tools(self.registry)
+            except ImportError:
+                pass  # tools module might not be present if ran independently
         self.run_store = RunStore(self.settings)
         self._runs: dict[str, RunHandle] = {}
         self._lock = threading.Lock()

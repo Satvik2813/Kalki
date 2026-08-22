@@ -1,6 +1,6 @@
 """Demo application — simple API with authentication."""
-from demo.project import config
-from demo.project.auth import create_token, verify_token
+import config
+from auth import create_token, verify_token
 
 
 def get_public_info() -> dict:

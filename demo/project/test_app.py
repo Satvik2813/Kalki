@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)
 ))))
 
-from demo.project.app import get_public_info, get_protected_data, login
+from app import get_public_info, get_protected_data, login
 
 
 def test_public_info():

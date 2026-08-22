@@ -64,7 +64,7 @@ class DemoProvider(MockProvider):
             Task(id="task-2", description="Read the auth module to find the bug",
                  tool="fs_read", depends_on=["task-1"],
                  tool_args={"path": "auth.py"}),
-            Task(id="task-3", description="Fix the auth bug (AUTH_SECRET_KEY → SECRET_KEY)",
+            Task(id="task-3", description="Fix the auth bug (AUTH_SECRET_KEY -> SECRET_KEY)",
                  tool="fs_edit", depends_on=["task-2"],
                  tool_args={
                      "path": "auth.py",
@@ -154,10 +154,10 @@ def main() -> int:
     memory.close()
 
     if result.status.value == "completed" and result.verified:
-        print(f"\n  ✓ DEMO SUCCESSFUL — KALKI autonomously fixed, tested, and deployed.")
+        print(f"\n  [OK] DEMO SUCCESSFUL -- KALKI autonomously fixed, tested, and deployed.")
         return 0
     else:
-        print(f"\n  ✗ DEMO INCOMPLETE — status={result.status.value}")
+        print(f"\n  X DEMO INCOMPLETE -- status={result.status.value}")
         return 1
 
 

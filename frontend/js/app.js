@@ -18,7 +18,7 @@ import { KalkiMockAdapter } from './adapters/mock-adapter.js';
 
 class KalkiApp {
   constructor() {
-    this.mode = 'demo'; // 'demo' | 'live'
+    this.mode = 'live'; // 'demo' | 'live'
     this.api = new KalkiAPIAdapter();
     this.mock = new KalkiMockAdapter();
     this.activeRunId = null;

@@ -13,7 +13,7 @@ KALKI should:
 import hashlib
 import time
 
-from demo.project import config
+import config
 
 
 def create_token(user_id: str) -> str:
