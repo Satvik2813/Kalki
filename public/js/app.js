@@ -36,6 +36,7 @@ class KalkiApp {
     this.initNavigation();
     this.initTabRouting();
     this.initAccordions();
+    this.initComponents();
     this.initAuthAndIntegrations();
     this.checkBackendHealth();
   }
@@ -59,12 +60,6 @@ class KalkiApp {
       view.classList.remove('hidden');
       view.classList.add('active');
     }
-
-    if (viewId === 'workspace-view' && !this.componentsRendered) {
-      this.initComponents();
-      this.componentsRendered = true;
-      this.refreshAllIntegrations();
-    }
   }
 
   async initAuthAndIntegrations() {
@@ -73,10 +68,9 @@ class KalkiApp {
       const me = await this.api.getMe();
       if (me.authenticated && me.user) {
         this.renderUserBadge(me.user);
-        this.showView('workspace-view');
-        return;
       }
     }
+    this.refreshAllIntegrations();
   }
 
   renderUserBadge(user) {
@@ -94,6 +88,9 @@ class KalkiApp {
   }
 
   initComponents() {
+    if (this.componentsRendered) return;
+    this.componentsRendered = true;
+
     // 1. Render Header
     renderHeader('#header-target', {
       onModeChange: (newMode) => {
@@ -102,8 +99,8 @@ class KalkiApp {
       }
     });
 
-    // 2. Render Onboarding Flow (Login -> Project -> Objective)
-    renderObjectiveInput('#onboarding-content', {
+    // 2. Render Objective Input Bar in Workspace
+    renderObjectiveInput('#objective-target', {
       onStart: (objective, project) => this.handleStartObjective(objective, project)
     });
 
