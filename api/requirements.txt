@@ -1,0 +1,16 @@
+# Runtime extras for the full KALKI stack (API + realtime).
+# The CORE requires nothing here — it runs on the Python stdlib.
+# Install with:  pip install -r requirements.txt
+fastapi>=0.110
+sse-starlette>=2.0
+PyJWT>=2.8
+python-dotenv>=1.0
+
+# Dev / test
+pytest>=8.0
+httpx>=0.27
+
+# Optional real providers
+anthropic>=0.34
+openai>=1.40
+psycopg[binary]>=3.1   # Supabase / pgvector
