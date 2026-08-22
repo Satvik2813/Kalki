@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kalki"
+version = "0.1.0"
+description = "KALKI — an autonomous AI software engineer (core / agent brain / backend)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Satvik" }]
+
+# Core dependencies are intentionally ZERO: the KALKI core (contracts,
+# planner, orchestrator, local memory, mock model) runs on the stdlib
+# alone so the closed-loop engine and its tests work fully offline.
+dependencies = []
+
+[project.optional-dependencies]
+# API / realtime layer
+api = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "sse-starlette>=2.0"]
+# Real model providers
+anthropic = ["anthropic>=0.34"]
+openai = ["openai>=1.40"]
+# Supabase / pgvector memory backend
+supabase = ["psycopg[binary]>=3.1"]
+# Everything for a full local dev install
+dev = [
+  "fastapi>=0.110", "uvicorn[standard]>=0.29", "sse-starlette>=2.0",
+  "pytest>=8.0", "httpx>=0.27", "python-dotenv>=1.0",
+]
+
+[tool.setuptools]
+packages = ["shared", "agent", "agent.tools", "memory", "models", "api", "config", "backend"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
