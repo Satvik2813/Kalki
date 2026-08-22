@@ -26,78 +26,216 @@
     <!-- Header Component Target -->
     <div id="header-target"></div>
 
-    <!-- Stage Pipeline Ribbon Component Target -->
-    <div id="stage-target"></div>
+    <!-- 2. AUTH VIEW -->
+    <section id="auth-view" class="view-section hidden">
+      <div class="auth-card glass-panel">
+        <h2>Developer Authentication</h2>
+        <p class="text-muted mb-4">Sign in with your developer identity to access the KALKI Workspace.</p>
+        <a href="/api/auth/google/login" class="btn btn-primary w-100 mb-3 flex-center gap-2" id="btn-auth-google" style="text-decoration: none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.761H12.545z"/></svg>
+          Continue with Google
+        </a>
+        <button class="btn btn-outline w-100" id="btn-auth-guest">Continue as Guest (Local Offline)</button>
+      </div>
+    </section>
 
     <!-- 3. PROJECT SELECTION VIEW -->
     <section id="project-view" class="view-section hidden">
       <div class="project-card glass-panel">
-        <h2>Select Project</h2>
-        <p class="text-muted mb-4">Choose your target engineering environment.</p>
+        <h2>Select Workspace Mode</h2>
+        <p class="text-muted mb-4">Choose your initial engineering workspace target.</p>
         
         <div class="project-options">
-          <div class="project-option" id="opt-github">
-            <h3>GitHub Repository</h3>
-            <p class="text-muted">Remote PR workflow</p>
+          <div class="project-option selected" id="opt-workspace">
+            <h3>Unified Workspace</h3>
+            <p class="text-muted">GitHub + Vercel + Local Repos</p>
           </div>
-          <div class="project-option" id="opt-vercel">
-            <h3>Vercel Project</h3>
-            <p class="text-muted">Cloud deployment</p>
+          <div class="project-option" id="opt-github">
+            <h3>GitHub Direct</h3>
+            <p class="text-muted">Remote PR workflow</p>
           </div>
           <div class="project-option" id="opt-local">
             <h3>Local Workspace</h3>
-            <p class="text-muted">Filesystem access</p>
+            <p class="text-muted">Direct filesystem sandbox</p>
           </div>
         </div>
 
         <div class="mt-4 flex-between">
           <button class="btn" id="btn-back-auth">Back</button>
-          <button class="btn btn-accent" id="btn-confirm-project" disabled>Confirm Environment</button>
+          <button class="btn btn-accent" id="btn-confirm-project">Enter Workspace</button>
         </div>
       </div>
     </section>
 
     <!-- 4. MAIN WORKSPACE VIEW -->
     <section id="workspace-view" class="view-section hidden">
-      
-      <!-- Header Component Target -->
-      <div id="header-target"></div>
-
-      <!-- Objective Input Component Target -->
-      <div id="objective-target"></div>
-
-      <!-- Stage Pipeline Ribbon Component Target -->
-      <div id="stage-target"></div>
-
-      <!-- Main Workspace (Split View) -->
-      <main class="workspace-grid">
-        <!-- Left HERO: Live Execution Timeline -->
-        <section id="timeline-target" class="timeline-panel glass-panel"></section>
-
-        <!-- Right Work Area: Tabbed Control Center -->
-        <section class="control-tabs-panel glass-panel">
-          <nav class="tabs-header">
-            <button class="tab-btn active" data-tab="tab-plan">PLAN</button>
-            <button class="tab-btn" data-tab="tab-tools">TOOLS</button>
-            <button class="tab-btn" data-tab="tab-memory">MEMORY</button>
-            <button class="tab-btn" data-tab="tab-recovery">RECOVERY</button>
-            <button class="tab-btn" data-tab="tab-code">CODE DIFF</button>
-            <button class="tab-btn" data-tab="tab-tests">TESTS</button>
-            <button class="tab-btn" data-tab="tab-deploy">DEPLOYMENT</button>
-          </nav>
-
-          <div class="tab-content-area">
-            <div id="tab-plan" class="tab-pane active"></div>
-            <div id="tab-tools" class="tab-pane"></div>
-            <div id="tab-memory" class="tab-pane"></div>
-            <div id="tab-recovery" class="tab-pane"></div>
-            <div id="tab-code" class="tab-pane"></div>
-            <div id="tab-tests" class="tab-pane"></div>
-            <div id="tab-deploy" class="tab-pane"></div>
+      <div class="workspace-layout">
+        
+        <!-- Left Workspace Sidebar -->
+        <aside class="workspace-sidebar glass-panel">
+          <div class="sidebar-brand">
+            <div class="brand-title">KALKI WORKSPACE</div>
+            <div id="user-badge" class="user-badge">
+              <span id="user-avatar" class="user-avatar-circle">DEV</span>
+              <span id="user-name" class="user-name-text">Developer</span>
+              <button id="btn-logout" class="btn-icon text-muted" title="Sign Out">⎋</button>
+            </div>
           </div>
-        </section>
-      </main>
+
+          <!-- Integrations Accordion -->
+          <div class="sidebar-integrations">
+            <!-- 1. GitHub Section -->
+            <div class="integration-section open" id="integ-section-github">
+              <div class="integration-header" data-toggle="github-tree">
+                <div class="integ-title-row">
+                  <span class="integ-icon">📦</span>
+                  <span class="integ-name">GitHub</span>
+                  <span id="github-status-dot" class="status-dot"></span>
+                </div>
+                <span class="accordion-arrow">▼</span>
+              </div>
+              <div class="integration-body" id="github-tree">
+                <div id="github-connect-box" class="connect-box">
+                  <p class="text-xs text-muted">Connect your GitHub account to access remote repositories.</p>
+                  <button id="btn-connect-github" class="btn btn-sm btn-accent w-100 mt-2">Connect GitHub</button>
+                </div>
+                <div id="github-connected-box" class="connected-box hidden">
+                  <div class="connected-user-bar">
+                    <span id="github-user-label" class="text-xs font-mono text-muted">@username</span>
+                    <button id="btn-disconnect-github" class="btn-link text-xs text-danger">Disconnect</button>
+                  </div>
+                  <div id="github-repos-list" class="sidebar-item-list">
+                    <div class="text-xs text-muted p-2">Loading repositories...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Vercel Section -->
+            <div class="integration-section open" id="integ-section-vercel">
+              <div class="integration-header" data-toggle="vercel-tree">
+                <div class="integ-title-row">
+                  <span class="integ-icon">▲</span>
+                  <span class="integ-name">Vercel</span>
+                  <span id="vercel-status-dot" class="status-dot"></span>
+                </div>
+                <span class="accordion-arrow">▼</span>
+              </div>
+              <div class="integration-body" id="vercel-tree">
+                <div id="vercel-connect-box" class="connect-box">
+                  <p class="text-xs text-muted">Connect Vercel for live deployments and previews.</p>
+                  <button id="btn-open-vercel-modal" class="btn btn-sm btn-accent w-100 mt-2">Connect Vercel</button>
+                </div>
+                <div id="vercel-connected-box" class="connected-box hidden">
+                  <div class="connected-user-bar">
+                    <span id="vercel-user-label" class="text-xs font-mono text-muted">@team</span>
+                    <button id="btn-disconnect-vercel" class="btn-link text-xs text-danger">Disconnect</button>
+                  </div>
+                  <div id="vercel-projects-list" class="sidebar-item-list">
+                    <div class="text-xs text-muted p-2">Loading projects...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Local Repository Section -->
+            <div class="integration-section open" id="integ-section-local">
+              <div class="integration-header" data-toggle="local-tree">
+                <div class="integ-title-row">
+                  <span class="integ-icon">💻</span>
+                  <span class="integ-name">Local Repository</span>
+                  <span id="local-status-dot" class="status-dot success"></span>
+                </div>
+                <span class="accordion-arrow">▼</span>
+              </div>
+              <div class="integration-body" id="local-tree">
+                <div class="connected-user-bar">
+                  <span class="text-xs font-mono text-muted">CLI Protocol</span>
+                  <button id="btn-pair-local" class="btn-link text-xs">Pair Current</button>
+                </div>
+                <div id="local-projects-list" class="sidebar-item-list">
+                  <div class="sidebar-item active" data-context="local" data-name="Kalki">
+                    <span class="item-name">📁 Kalki (Current Workspace)</span>
+                    <span class="badge badge-sm badge-info">active</span>
+                  </div>
+                </div>
+                <div class="cli-hint mt-2">
+                  <code>python scripts/kalki_cli.py connect .</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <div class="workspace-main">
+          <!-- Header Component Target -->
+          <div id="header-target"></div>
+
+          <!-- Active Project Context Ribbon -->
+          <div id="active-project-bar" class="active-project-bar glass-panel mb-3">
+            <div class="project-indicator">
+              <span class="text-xs text-muted">TARGET CONTEXT:</span>
+              <span id="active-project-name" class="font-bold text-accent">Kalki</span>
+              <span id="active-project-badge" class="badge badge-sm badge-info">local</span>
+            </div>
+            <div class="project-stats text-xs text-muted">
+              <span>Environment: <strong id="active-env-label">Local Sandbox</strong></span>
+              <span class="ml-3">Branch: <strong id="active-branch-name">main</strong></span>
+            </div>
+          </div>
+
+          <!-- Objective Input Component Target -->
+          <div id="objective-target"></div>
+
+          <!-- Stage Pipeline Ribbon Component Target -->
+          <div id="stage-target"></div>
+
+          <!-- Main Workspace (Split View) -->
+          <main class="workspace-grid">
+            <!-- Left HERO: Live Execution Timeline -->
+            <section id="timeline-target" class="timeline-panel glass-panel"></section>
+
+            <!-- Right Work Area: Tabbed Control Center -->
+            <section class="control-tabs-panel glass-panel">
+              <nav class="tabs-header">
+                <button class="tab-btn active" data-tab="tab-plan">PLAN</button>
+                <button class="tab-btn" data-tab="tab-tools">TOOLS</button>
+                <button class="tab-btn" data-tab="tab-memory">MEMORY</button>
+                <button class="tab-btn" data-tab="tab-recovery">RECOVERY</button>
+                <button class="tab-btn" data-tab="tab-code">CODE DIFF</button>
+                <button class="tab-btn" data-tab="tab-tests">TESTS</button>
+                <button class="tab-btn" data-tab="tab-deploy">DEPLOYMENT</button>
+              </nav>
+
+              <div class="tab-content-area">
+                <div id="tab-plan" class="tab-pane active"></div>
+                <div id="tab-tools" class="tab-pane"></div>
+                <div id="tab-memory" class="tab-pane"></div>
+                <div id="tab-recovery" class="tab-pane"></div>
+                <div id="tab-code" class="tab-pane"></div>
+                <div id="tab-tests" class="tab-pane"></div>
+                <div id="tab-deploy" class="tab-pane"></div>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
     </section>
+
+    <!-- Connect Vercel Modal -->
+    <div id="vercel-token-modal" class="modal-backdrop hidden">
+      <div class="modal-card glass-panel">
+        <h3>Connect Vercel Integration</h3>
+        <p class="text-xs text-muted mb-3">Enter your personal Vercel Access Token. Tokens are encrypted at rest with AES and never shared between users.</p>
+        <input type="password" id="vercel-token-input" class="input w-100 mb-3" placeholder="vcp_..." />
+        <div id="vercel-modal-error" class="text-xs text-danger mb-2 hidden"></div>
+        <div class="flex-between">
+          <button class="btn" id="btn-close-vercel-modal">Cancel</button>
+          <button class="btn btn-accent" id="btn-submit-vercel-token">Connect Account</button>
+        </div>
+      </div>
+    </div>
 
   </div>
 

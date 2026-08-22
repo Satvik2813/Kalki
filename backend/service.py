@@ -24,7 +24,7 @@ from config.settings import Settings, get_settings
 from memory.manager import MemoryManager
 from models.registry import get_provider
 from shared.contracts import AgentEvent, AgentState, ExecutionStatus
-from backend.persistence import RunStore
+from backend.persistence import RunStore, IntegrationStore
 
 
 @dataclass
@@ -56,6 +56,7 @@ class KalkiService:
             except ImportError:
                 pass  # tools module might not be present if ran independently
         self.run_store = RunStore(self.settings)
+        self.integration_store = IntegrationStore(self.settings)
         self._runs: dict[str, RunHandle] = {}
         self._lock = threading.Lock()
 

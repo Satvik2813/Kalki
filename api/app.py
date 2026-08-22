@@ -45,6 +45,8 @@ except ImportError as exc:  # pragma: no cover - env dependent
 
 from backend.service import KalkiService
 from shared.contracts import ExecutionStatus
+from api.auth import auth_router
+from api.integrations import integrations_router
 
 
 class CreateTaskRequest(BaseModel):
@@ -64,7 +66,7 @@ def get_current_user(req: Request) -> Optional[str]:
         return None
     token = auth.split(" ")[1]
     svc: KalkiService = req.app.state.service
-    secret = getattr(svc.settings, "supabase_jwt_secret", "")
+    secret = getattr(svc.settings, "supabase_jwt_secret", "") or getattr(svc.settings, "encryption_key", "")
     if not secret:
         return None
     try:
@@ -78,6 +80,9 @@ def create_app(service: Optional[KalkiService] = None) -> "FastAPI":
                   description="Autonomous AI software engineer — core API.")
     svc = service or KalkiService()
     app.state.service = svc
+
+    app.include_router(auth_router)
+    app.include_router(integrations_router)
 
     @app.get("/health")
     def health():

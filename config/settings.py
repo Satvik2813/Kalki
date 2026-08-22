@@ -68,10 +68,20 @@ class Settings:
     max_plan_revisions: int = 3
     workspace_root: str = "."
 
-    # API
+    # API & Networking
     api_host: str = "127.0.0.1"
     api_port: int = 8000
     log_level: str = "INFO"
+    app_base_url: str = "http://localhost:8000"
+
+    # Integrations & Auth
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    github_client_id: str = ""
+    github_client_secret: str = ""
+    vercel_client_id: str = ""
+    vercel_client_secret: str = ""
+    encryption_key: str = ""
 
     # Non-config runtime metadata
     extras: dict = field(default_factory=dict)
@@ -104,6 +114,14 @@ class Settings:
             api_host=_get("KALKI_API_HOST", "127.0.0.1"),
             api_port=_get_int("KALKI_API_PORT", 8000),
             log_level=_get("KALKI_LOG_LEVEL", "INFO"),
+            app_base_url=_get("APP_BASE_URL", _get("KALKI_APP_BASE_URL", "http://localhost:8000")),
+            google_client_id=_get("GOOGLE_CLIENT_ID", ""),
+            google_client_secret=_get("GOOGLE_CLIENT_SECRET", ""),
+            github_client_id=_get("GITHUB_CLIENT_ID", ""),
+            github_client_secret=_get("GITHUB_CLIENT_SECRET", ""),
+            vercel_client_id=_get("VERCEL_CLIENT_ID", ""),
+            vercel_client_secret=_get("VERCEL_CLIENT_SECRET", ""),
+            encryption_key=_get("ENCRYPTION_KEY", _get("SUPABASE_JWT_SECRET", "kalki-default-dev-secret-key-32b")),
         )
 
 

@@ -1,5 +1,6 @@
 /**
- * KALKI — Main Application Orchestrator & State Coordinator
+ * KALKI — Main Application Orchestrator & Workspace Coordinator
+ * Manages Developer Identity, Multi-Service Integrations, and Autonomous Execution.
  */
 
 import { renderHeader } from './components/header.js';
@@ -23,12 +24,73 @@ class KalkiApp {
     this.mock = new KalkiMockAdapter();
     this.activeRunId = null;
 
-    this.selectedProjectType = null;
+    this.activeProject = {
+      name: 'Kalki',
+      env: 'Local Sandbox',
+      branch: 'main',
+      type: 'local'
+    };
     this.componentsRendered = false;
 
+    this.initUrlParams();
     this.initNavigation();
     this.initTabRouting();
+    this.initAccordions();
+    this.initAuthAndIntegrations();
     this.checkBackendHealth();
+  }
+
+  initUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      this.api.setToken(token);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+
+  showView(viewId) {
+    document.querySelectorAll('.view-section').forEach(v => {
+      v.classList.remove('active');
+      v.classList.add('hidden');
+    });
+    const view = document.getElementById(viewId);
+    if (view) {
+      view.classList.remove('hidden');
+      view.classList.add('active');
+    }
+
+    if (viewId === 'workspace-view' && !this.componentsRendered) {
+      this.initComponents();
+      this.componentsRendered = true;
+      this.refreshAllIntegrations();
+    }
+  }
+
+  async initAuthAndIntegrations() {
+    const token = this.api.getToken();
+    if (token) {
+      const me = await this.api.getMe();
+      if (me.authenticated && me.user) {
+        this.renderUserBadge(me.user);
+        this.showView('workspace-view');
+        return;
+      }
+    }
+  }
+
+  renderUserBadge(user) {
+    const nameEl = document.getElementById('user-name');
+    const avatarEl = document.getElementById('user-avatar');
+    if (nameEl) nameEl.textContent = user.name || user.email || 'Developer';
+    if (avatarEl) {
+      if (user.avatar_url) {
+        avatarEl.innerHTML = `<img src="${user.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
+      } else {
+        const initials = (user.name || 'DV').slice(0, 2).toUpperCase();
+        avatarEl.textContent = initials;
+      }
+    }
   }
 
   initComponents() {
@@ -61,6 +123,275 @@ class KalkiApp {
     this.deployPanel = new DeployPanel('#tab-deploy', {
       onApprove: (tools) => this.handleApproveGatedAction(tools)
     });
+
+    // 6. Setup Integration Event Listeners
+    this.setupIntegrationHandlers();
+  }
+
+  setupIntegrationHandlers() {
+    // GitHub Connect & Disconnect
+    const btnConnectGitHub = document.getElementById('btn-connect-github');
+    if (btnConnectGitHub) {
+      btnConnectGitHub.addEventListener('click', () => {
+        window.location.href = '/api/integrations/github/connect';
+      });
+    }
+
+    const btnDisconnectGitHub = document.getElementById('btn-disconnect-github');
+    if (btnDisconnectGitHub) {
+      btnDisconnectGitHub.addEventListener('click', async () => {
+        await this.api.disconnectGitHub();
+        this.refreshGitHubState();
+      });
+    }
+
+    // Vercel Connect Modal & Disconnect
+    const btnOpenVercel = document.getElementById('btn-open-vercel-modal');
+    const modalVercel = document.getElementById('vercel-token-modal');
+    const btnCloseVercel = document.getElementById('btn-close-vercel-modal');
+    const btnSubmitVercel = document.getElementById('btn-submit-vercel-token');
+    const inputVercelToken = document.getElementById('vercel-token-input');
+    const errVercel = document.getElementById('vercel-modal-error');
+
+    if (btnOpenVercel && modalVercel) {
+      btnOpenVercel.addEventListener('click', () => {
+        modalVercel.classList.remove('hidden');
+        if (inputVercelToken) inputVercelToken.value = '';
+        if (errVercel) errVercel.classList.add('hidden');
+      });
+    }
+
+    if (btnCloseVercel && modalVercel) {
+      btnCloseVercel.addEventListener('click', () => modalVercel.classList.add('hidden'));
+    }
+
+    if (btnSubmitVercel && inputVercelToken) {
+      btnSubmitVercel.addEventListener('click', async () => {
+        const tokenVal = inputVercelToken.value.trim();
+        if (!tokenVal) return;
+        try {
+          btnSubmitVercel.disabled = true;
+          btnSubmitVercel.textContent = 'Connecting...';
+          await this.api.connectVercel(tokenVal);
+          modalVercel.classList.add('hidden');
+          this.refreshVercelState();
+        } catch (err) {
+          if (errVercel) {
+            errVercel.textContent = err.message;
+            errVercel.classList.remove('hidden');
+          }
+        } finally {
+          btnSubmitVercel.disabled = false;
+          btnSubmitVercel.textContent = 'Connect Account';
+        }
+      });
+    }
+
+    const btnDisconnectVercel = document.getElementById('btn-disconnect-vercel');
+    if (btnDisconnectVercel) {
+      btnDisconnectVercel.addEventListener('click', async () => {
+        await this.api.disconnectVercel();
+        this.refreshVercelState();
+      });
+    }
+
+    // Local Pair Button
+    const btnPairLocal = document.getElementById('btn-pair-local');
+    if (btnPairLocal) {
+      btnPairLocal.addEventListener('click', async () => {
+        await this.api.connectLocal({
+          name: 'Kalki Workspace',
+          path: '.',
+          git_remote: 'https://github.com/Satvik2813/Kalki.git',
+          current_branch: 'integration/kalki-e2e',
+          status: 'connected'
+        });
+        this.refreshLocalState();
+      });
+    }
+
+    // Logout
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout) {
+      btnLogout.addEventListener('click', () => {
+        this.api.clearToken();
+        this.showView('landing-view');
+      });
+    }
+  }
+
+  initAccordions() {
+    document.querySelectorAll('.integration-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const section = header.closest('.integration-section');
+        if (section) {
+          section.classList.toggle('open');
+        }
+      });
+    });
+  }
+
+  async refreshAllIntegrations() {
+    await Promise.allSettled([
+      this.refreshGitHubState(),
+      this.refreshVercelState(),
+      this.refreshLocalState(),
+    ]);
+  }
+
+  async refreshGitHubState() {
+    const status = await this.api.getGitHubStatus();
+    const dot = document.getElementById('github-status-dot');
+    const connectBox = document.getElementById('github-connect-box');
+    const connectedBox = document.getElementById('github-connected-box');
+    const userLabel = document.getElementById('github-user-label');
+    const reposList = document.getElementById('github-repos-list');
+
+    if (status.connected) {
+      if (dot) dot.className = 'status-dot success';
+      if (connectBox) connectBox.classList.add('hidden');
+      if (connectedBox) connectedBox.classList.remove('hidden');
+      if (userLabel) userLabel.textContent = `@${status.username}`;
+
+      try {
+        const data = await this.api.getGitHubRepos();
+        if (reposList) {
+          reposList.innerHTML = '';
+          if (!data.repos || data.repos.length === 0) {
+            reposList.innerHTML = '<div class="text-xs text-muted p-2">No repositories found</div>';
+          } else {
+            data.repos.forEach(repo => {
+              const el = document.createElement('div');
+              el.className = 'sidebar-item';
+              el.innerHTML = `
+                <span class="item-name" title="${repo.full_name}">${repo.name}</span>
+                <span class="badge badge-sm">${repo.default_branch || 'main'}</span>
+              `;
+              el.addEventListener('click', () => {
+                this.setActiveProject({
+                  name: repo.full_name,
+                  env: 'GitHub Remote',
+                  branch: repo.default_branch || 'main',
+                  type: 'github'
+                });
+                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                el.classList.add('active');
+              });
+              reposList.appendChild(el);
+            });
+          }
+        }
+      } catch (err) {
+        if (reposList) reposList.innerHTML = `<div class="text-xs text-danger p-2">${err.message}</div>`;
+      }
+    } else {
+      if (dot) dot.className = 'status-dot';
+      if (connectBox) connectBox.classList.remove('hidden');
+      if (connectedBox) connectedBox.classList.add('hidden');
+    }
+  }
+
+  async refreshVercelState() {
+    const status = await this.api.getVercelStatus();
+    const dot = document.getElementById('vercel-status-dot');
+    const connectBox = document.getElementById('vercel-connect-box');
+    const connectedBox = document.getElementById('vercel-connected-box');
+    const userLabel = document.getElementById('vercel-user-label');
+    const projectsList = document.getElementById('vercel-projects-list');
+
+    if (status.connected) {
+      if (dot) dot.className = 'status-dot success';
+      if (connectBox) connectBox.classList.add('hidden');
+      if (connectedBox) connectedBox.classList.remove('hidden');
+      if (userLabel) userLabel.textContent = `@${status.username}`;
+
+      try {
+        const data = await this.api.getVercelProjects();
+        if (projectsList) {
+          projectsList.innerHTML = '';
+          if (!data.projects || data.projects.length === 0) {
+            projectsList.innerHTML = '<div class="text-xs text-muted p-2">No Vercel projects found</div>';
+          } else {
+            data.projects.forEach(proj => {
+              const el = document.createElement('div');
+              el.className = 'sidebar-item';
+              const state = proj.latest_deployment?.readyState || 'READY';
+              const stateClass = state === 'READY' ? 'badge-success' : 'badge-warning';
+              el.innerHTML = `
+                <span class="item-name" title="${proj.name}">${proj.name}</span>
+                <span class="badge badge-sm ${stateClass}">${state.toLowerCase()}</span>
+              `;
+              el.addEventListener('click', () => {
+                this.setActiveProject({
+                  name: proj.name,
+                  env: 'Vercel Cloud',
+                  branch: 'production',
+                  type: 'vercel'
+                });
+                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                el.classList.add('active');
+              });
+              projectsList.appendChild(el);
+            });
+          }
+        }
+      } catch (err) {
+        if (projectsList) projectsList.innerHTML = `<div class="text-xs text-danger p-2">${err.message}</div>`;
+      }
+    } else {
+      if (dot) dot.className = 'status-dot';
+      if (connectBox) connectBox.classList.remove('hidden');
+      if (connectedBox) connectedBox.classList.add('hidden');
+    }
+  }
+
+  async refreshLocalState() {
+    const dot = document.getElementById('local-status-dot');
+    const list = document.getElementById('local-projects-list');
+    try {
+      const data = await this.api.getLocalProjects();
+      if (dot) dot.className = 'status-dot success';
+      if (list && data.projects && data.projects.length > 0) {
+        list.innerHTML = '';
+        data.projects.forEach(p => {
+          const el = document.createElement('div');
+          el.className = 'sidebar-item';
+          el.innerHTML = `
+            <span class="item-name" title="${p.local_path}">📁 ${p.name}</span>
+            <span class="badge badge-sm badge-info">${p.current_branch}</span>
+          `;
+          el.addEventListener('click', () => {
+            this.setActiveProject({
+              name: p.name,
+              env: 'Local Workspace',
+              branch: p.current_branch,
+              type: 'local'
+            });
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+          });
+          list.appendChild(el);
+        });
+      }
+    } catch {
+      if (dot) dot.className = 'status-dot';
+    }
+  }
+
+  setActiveProject(project) {
+    this.activeProject = project;
+    const nameEl = document.getElementById('active-project-name');
+    const badgeEl = document.getElementById('active-project-badge');
+    const envLabel = document.getElementById('active-env-label');
+    const branchName = document.getElementById('active-branch-name');
+
+    if (nameEl) nameEl.textContent = project.name;
+    if (badgeEl) {
+      badgeEl.textContent = project.type;
+      badgeEl.className = `badge badge-sm ${project.type === 'github' ? 'badge-active' : project.type === 'vercel' ? 'badge-success' : 'badge-info'}`;
+    }
+    if (envLabel) envLabel.textContent = project.env;
+    if (branchName) branchName.textContent = project.branch;
   }
 
   initTabRouting() {
@@ -96,7 +427,8 @@ class KalkiApp {
   }
 
   handleStartObjective(objective, project) {
-    console.log(`[KALKI] Starting autonomous execution for objective: "${objective}" on project: "${project}"`);
+    const targetProject = project || this.activeProject?.name || 'Kalki';
+    console.log(`[KALKI] Starting autonomous execution for objective: "${objective}" on project "${targetProject}"`);
 
     // Reset UI states
     this.stageRibbon.reset();
@@ -105,9 +437,9 @@ class KalkiApp {
     this.updateAgentStatusBadge('EXECUTING', 'badge-active');
 
     if (this.mode === 'demo') {
-      this.runMockExecution(objective, project);
+      this.runMockExecution(objective, targetProject);
     } else {
-      this.runLiveAPIExecution(objective, project);
+      this.runLiveAPIExecution(objective, targetProject);
     }
   }
 
@@ -124,7 +456,11 @@ class KalkiApp {
 
   async runLiveAPIExecution(objective, project) {
     try {
-      const task = await this.api.createTask(objective, { start: true, project: project });
+      const targetProject = project || this.activeProject?.name || 'Kalki';
+      const task = await this.api.createTask(objective, {
+        project: targetProject,
+        start: true
+      });
       this.activeRunId = task.id;
 
       this.api.subscribeToEvents(
@@ -135,21 +471,17 @@ class KalkiApp {
       );
     } catch (err) {
       console.error('Failed to run live API task:', err);
-      // Fallback to demo mode if API fails
       this.runMockExecution(objective);
     }
   }
 
   handleIncomingEvent(evt) {
-    // 1. Add to Live Timeline HERO
     this.liveTimeline.addEvent(evt);
 
-    // 2. Update Stage Ribbon
     if (evt.node) {
       this.stageRibbon.setStage(evt.node, 'active');
     }
 
-    // 3. Process specific event types to update control panels
     switch (evt.type) {
       case 'PLAN_CREATED':
       case 'PLAN_REVISED':
@@ -246,57 +578,36 @@ class KalkiApp {
       badgeEl.textContent = text;
     }
   }
+
   initNavigation() {
     const btnEnter = document.getElementById('btn-enter-kalki');
     const btnGuest = document.getElementById('btn-auth-guest');
     const btnBackAuth = document.getElementById('btn-back-auth');
     const btnConfirmProject = document.getElementById('btn-confirm-project');
-    const projectOptions = document.querySelectorAll('.project-option');
-
-    const showView = (viewId) => {
-      document.querySelectorAll('.view-section').forEach(v => {
-        v.classList.remove('active');
-        v.classList.add('hidden');
-      });
-      const view = document.getElementById(viewId);
-      if (view) {
-        view.classList.remove('hidden');
-        view.classList.add('active');
-      }
-    };
 
     if (btnEnter) {
-      btnEnter.addEventListener('click', () => showView('auth-view'));
+      btnEnter.addEventListener('click', () => this.showView('auth-view'));
     }
 
     if (btnGuest) {
-      btnGuest.addEventListener('click', () => showView('project-view'));
+      btnGuest.addEventListener('click', async () => {
+        try {
+          const res = await this.api.loginGuest();
+          if (res.user) this.renderUserBadge(res.user);
+        } catch {
+          this.renderUserBadge({ name: 'Guest Developer (Local)', email: 'guest@local' });
+        }
+        this.showView('project-view');
+      });
     }
 
     if (btnBackAuth) {
-      btnBackAuth.addEventListener('click', () => showView('auth-view'));
+      btnBackAuth.addEventListener('click', () => this.showView('auth-view'));
     }
-
-    projectOptions.forEach(opt => {
-      opt.addEventListener('click', () => {
-        projectOptions.forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
-        if (btnConfirmProject) btnConfirmProject.disabled = false;
-        
-        // Save selected project type to state
-        this.selectedProjectType = opt.id.replace('opt-', '');
-      });
-    });
 
     if (btnConfirmProject) {
       btnConfirmProject.addEventListener('click', () => {
-        console.log(`[KALKI UI] Initializing workspace for: ${this.selectedProjectType}`);
-        showView('workspace-view');
-        // Render components if they weren't rendered yet
-        if (!this.componentsRendered) {
-          this.initComponents();
-          this.componentsRendered = true;
-        }
+        this.showView('workspace-view');
       });
     }
   }

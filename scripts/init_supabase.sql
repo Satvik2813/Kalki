@@ -68,3 +68,49 @@ CREATE TABLE IF NOT EXISTS kalki_memories (
 CREATE INDEX IF NOT EXISTS idx_kalki_mem_scope ON kalki_memories(scope);
 CREATE INDEX IF NOT EXISTS idx_kalki_mem_project ON kalki_memories(project);
 CREATE INDEX IF NOT EXISTS idx_kalki_mem_user ON kalki_memories(user_id);
+
+-- 6. User Integrations (GitHub, Vercel OAuth credentials)
+CREATE TABLE IF NOT EXISTS user_integrations (
+    id TEXT PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    provider TEXT NOT NULL,              -- 'github' | 'vercel'
+    account_id TEXT,
+    account_username TEXT,
+    encrypted_token TEXT NOT NULL,
+    scopes JSONB NOT NULL DEFAULT '[]',
+    metadata JSONB NOT NULL DEFAULT '{}',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_user_provider UNIQUE (user_id, provider)
+);
+CREATE INDEX IF NOT EXISTS idx_user_integrations_user ON user_integrations(user_id);
+
+-- 7. Local Projects (Pairing with local repository via KALKI CLI)
+CREATE TABLE IF NOT EXISTS local_projects (
+    id TEXT PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    local_path TEXT NOT NULL,
+    git_remote TEXT,
+    current_branch TEXT,
+    status TEXT NOT NULL DEFAULT 'connected',
+    metadata JSONB NOT NULL DEFAULT '{}',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_local_projects_user ON local_projects(user_id);
+
+-- 8. Unified KALKI Projects Context
+CREATE TABLE IF NOT EXISTS kalki_projects (
+    id TEXT PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    github_repo TEXT,
+    vercel_project_id TEXT,
+    local_path TEXT,
+    metadata JSONB NOT NULL DEFAULT '{}',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_kalki_projects_user ON kalki_projects(user_id);
+
