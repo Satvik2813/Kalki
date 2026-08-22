@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KALKI — Autonomous AI Software Engineer</title>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Styles -->
+  <link rel="stylesheet" href="css/kalki-theme.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+  <div id="app-container">
+    <!-- Header Component Target -->
+    <div id="header-target"></div>
+
+    <!-- Objective Input Component Target -->
+    <div id="objective-target"></div>
+
+    <!-- Stage Pipeline Ribbon Component Target -->
+    <div id="stage-target"></div>
+
+    <!-- Main Workspace (Split View) -->
+    <main class="workspace-grid">
+      <!-- Left HERO: Live Execution Timeline -->
+      <section id="timeline-target" class="timeline-panel"></section>
+
+      <!-- Right Work Area: Tabbed Control Center -->
+      <section class="control-tabs-panel">
+        <nav class="tabs-header">
+          <button class="tab-btn active" data-tab="tab-plan">PLAN</button>
+          <button class="tab-btn" data-tab="tab-tools">TOOLS</button>
+          <button class="tab-btn" data-tab="tab-memory">MEMORY</button>
+          <button class="tab-btn" data-tab="tab-recovery">RECOVERY</button>
+          <button class="tab-btn" data-tab="tab-code">CODE DIFF</button>
+          <button class="tab-btn" data-tab="tab-tests">TESTS</button>
+          <button class="tab-btn" data-tab="tab-deploy">DEPLOYMENT</button>
+        </nav>
+
+        <div class="tab-content-area">
+          <div id="tab-plan" class="tab-pane active"></div>
+          <div id="tab-tools" class="tab-pane"></div>
+          <div id="tab-memory" class="tab-pane"></div>
+          <div id="tab-recovery" class="tab-pane"></div>
+          <div id="tab-code" class="tab-pane"></div>
+          <div id="tab-tests" class="tab-pane"></div>
+          <div id="tab-deploy" class="tab-pane"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Entry Script -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

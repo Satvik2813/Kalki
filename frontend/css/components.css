@@ -1,0 +1,647 @@
+/* ==========================================================================
+   KALKI — Component Layout & Control Center Panel Styles
+   ========================================================================== */
+
+#app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Header Bar
+   -------------------------------------------------------------------------- */
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.kalki-wordmark-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kalki-logo-svg {
+  height: 28px;
+  width: auto;
+}
+
+.kalki-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  border-left: 1px solid var(--border-main);
+  padding-left: 12px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mode-toggle-group {
+  display: flex;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 2px;
+}
+
+.mode-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+  transition: all 0.2s ease;
+}
+
+.mode-btn.active {
+  background: var(--accent-cyan);
+  color: #000;
+  box-shadow: 0 0 8px var(--accent-cyan-glow);
+}
+
+/* --------------------------------------------------------------------------
+   Project & Context Bar
+   -------------------------------------------------------------------------- */
+.context-bar {
+  display: grid;
+  grid-template-columns: 240px 1fr 220px;
+  height: 40px;
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border-subtle);
+  align-items: center;
+  padding: 0 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.context-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.context-label {
+  color: var(--text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.context-val {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   Objective Input Area
+   -------------------------------------------------------------------------- */
+.objective-section {
+  padding: 12px 16px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.objective-box {
+  display: flex;
+  gap: 12px;
+  background: var(--bg-darkest);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  transition: border-color 0.2s ease;
+}
+
+.objective-box:focus-within {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan-glow);
+}
+
+.objective-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  outline: none;
+}
+
+.objective-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.preset-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.btn-kalki-primary {
+  background: linear-gradient(135deg, var(--accent-cyan), #00a8ff);
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 0 12px var(--accent-cyan-glow);
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.btn-kalki-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 16px var(--accent-cyan);
+}
+
+/* --------------------------------------------------------------------------
+   Execution Workflow Stage Ribbon
+   -------------------------------------------------------------------------- */
+.stage-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  background: var(--bg-panel-header);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+
+.stage-pipeline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.stage-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.stage-step.completed {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border-color: var(--color-success-border);
+}
+
+.stage-step.active {
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.12);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan-glow);
+  animation: pulse-glow 2s infinite;
+}
+
+.stage-step.failed {
+  color: var(--color-failure);
+  background: var(--color-failure-bg);
+  border-color: var(--color-failure-border);
+}
+
+.stage-step.recovering {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning-border);
+}
+
+.stage-arrow {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   Main Execution Workspace (Split View)
+   -------------------------------------------------------------------------- */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  flex: 1;
+  overflow: hidden;
+  background: var(--bg-darkest);
+}
+
+/* Left Hero: Live Execution Timeline */
+.timeline-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 0 14px;
+  background: var(--bg-panel-header);
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.timeline-stream {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timeline-event-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.timeline-event-card:hover {
+  border-color: var(--border-main);
+  background: var(--bg-surface-hover);
+}
+
+.timeline-event-card.type-PLAN_CREATED { border-left: 3px solid var(--accent-blue); }
+.timeline-event-card.type-TOOL_STARTED { border-left: 3px solid var(--accent-cyan); }
+.timeline-event-card.type-TOOL_COMPLETED { border-left: 3px solid var(--color-success); }
+.timeline-event-card.type-TOOL_FAILED { border-left: 3px solid var(--color-failure); }
+.timeline-event-card.type-MEMORY_RETRIEVED { border-left: 3px solid var(--accent-purple); }
+.timeline-event-card.type-RECOVERY_STARTED { border-left: 3px solid var(--color-warning); }
+.timeline-event-card.type-CODE_CHANGED { border-left: 3px solid #e36049; }
+
+.event-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.event-time {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.event-message {
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.event-details-json {
+  margin-top: 6px;
+  padding: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  color: #a5d6ff;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+/* Right Work Area: Tabbed Control Center */
+.control-tabs-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  overflow: hidden;
+}
+
+.tabs-header {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  background: var(--bg-panel-header);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 8px;
+  gap: 2px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tab-btn.active {
+  color: var(--accent-cyan);
+  border-bottom-color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.05);
+}
+
+.tab-content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.tab-pane {
+  display: none;
+  height: 100%;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   Plan Panel Styles
+   -------------------------------------------------------------------------- */
+.plan-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.plan-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-family: var(--font-mono);
+  transition: all 0.2s ease;
+}
+
+.plan-item.active {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan-glow);
+  background: rgba(0, 240, 255, 0.03);
+}
+
+.plan-item-num {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  width: 24px;
+}
+
+.plan-item-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.plan-item-title {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.plan-item-tool {
+  font-size: 11px;
+  color: var(--accent-blue);
+}
+
+/* --------------------------------------------------------------------------
+   Tool Activity Grid
+   -------------------------------------------------------------------------- */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tool-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+}
+
+.tool-card.active {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan-glow);
+}
+
+/* --------------------------------------------------------------------------
+   Memory Panel Cards
+   -------------------------------------------------------------------------- */
+.memory-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--color-memory-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 0 15px var(--accent-purple-glow);
+}
+
+.memory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.memory-similarity {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-purple);
+}
+
+/* --------------------------------------------------------------------------
+   Failure Recovery Stepper
+   -------------------------------------------------------------------------- */
+.recovery-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.recovery-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Code Diff Viewer
+   -------------------------------------------------------------------------- */
+.diff-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-darkest);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  font-family: var(--font-mono);
+}
+
+.diff-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-panel-header);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+
+.diff-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.diff-line {
+  display: flex;
+  white-space: pre-wrap;
+}
+
+.diff-line.add {
+  background: rgba(63, 185, 80, 0.15);
+  color: #7ee787;
+}
+
+.diff-line.del {
+  background: rgba(248, 81, 73, 0.15);
+  color: #ffa198;
+}
+
+.diff-num {
+  width: 40px;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   Human Approval Modal / Banner
+   -------------------------------------------------------------------------- */
+.approval-banner {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.approval-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-approve {
+  background: var(--color-success);
+  color: #000;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
