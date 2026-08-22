@@ -2,7 +2,6 @@
 # The CORE requires nothing here — it runs on the Python stdlib.
 # Install with:  pip install -r requirements.txt
 fastapi>=0.110
-uvicorn[standard]>=0.29
 sse-starlette>=2.0
 PyJWT>=2.8
 python-dotenv>=1.0
