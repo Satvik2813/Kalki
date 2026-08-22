@@ -23,7 +23,10 @@ class KalkiApp {
     this.mock = new KalkiMockAdapter();
     this.activeRunId = null;
 
-    this.initComponents();
+    this.selectedProjectType = null;
+    this.componentsRendered = false;
+
+    this.initNavigation();
     this.initTabRouting();
     this.checkBackendHealth();
   }
@@ -241,6 +244,60 @@ class KalkiApp {
     if (badgeEl) {
       badgeEl.className = `badge ${badgeClass}`;
       badgeEl.textContent = text;
+    }
+  }
+  initNavigation() {
+    const btnEnter = document.getElementById('btn-enter-kalki');
+    const btnGuest = document.getElementById('btn-auth-guest');
+    const btnBackAuth = document.getElementById('btn-back-auth');
+    const btnConfirmProject = document.getElementById('btn-confirm-project');
+    const projectOptions = document.querySelectorAll('.project-option');
+
+    const showView = (viewId) => {
+      document.querySelectorAll('.view-section').forEach(v => {
+        v.classList.remove('active');
+        v.classList.add('hidden');
+      });
+      const view = document.getElementById(viewId);
+      if (view) {
+        view.classList.remove('hidden');
+        view.classList.add('active');
+      }
+    };
+
+    if (btnEnter) {
+      btnEnter.addEventListener('click', () => showView('auth-view'));
+    }
+
+    if (btnGuest) {
+      btnGuest.addEventListener('click', () => showView('project-view'));
+    }
+
+    if (btnBackAuth) {
+      btnBackAuth.addEventListener('click', () => showView('auth-view'));
+    }
+
+    projectOptions.forEach(opt => {
+      opt.addEventListener('click', () => {
+        projectOptions.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        if (btnConfirmProject) btnConfirmProject.disabled = false;
+        
+        // Save selected project type to state
+        this.selectedProjectType = opt.id.replace('opt-', '');
+      });
+    });
+
+    if (btnConfirmProject) {
+      btnConfirmProject.addEventListener('click', () => {
+        console.log(`[KALKI UI] Initializing workspace for: ${this.selectedProjectType}`);
+        showView('workspace-view');
+        // Render components if they weren't rendered yet
+        if (!this.componentsRendered) {
+          this.initComponents();
+          this.componentsRendered = true;
+        }
+      });
     }
   }
 }
