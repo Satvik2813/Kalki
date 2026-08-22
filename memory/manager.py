@@ -44,46 +44,46 @@ class MemoryManager:
 
     # -- session layer -------------------------------------------
     def record_session(self, session_id: str, content: str,
-                        tags: Optional[list[str]] = None, **metadata) -> MemoryRecord:
+                        tags: Optional[list[str]] = None, user_id: Optional[str] = None, **metadata) -> MemoryRecord:
         return self.store.add(MemoryRecord(
             scope=MemoryScope.SESSION, content=content, session_id=session_id,
-            tags=tags or [], metadata=metadata,
+            user_id=user_id, tags=tags or [], metadata=metadata,
         ))
 
     # -- project layer -------------------------------------------
     def record_project(self, project: str, content: str,
-                       tags: Optional[list[str]] = None, **metadata) -> MemoryRecord:
+                       tags: Optional[list[str]] = None, user_id: Optional[str] = None, **metadata) -> MemoryRecord:
         return self.store.add(MemoryRecord(
             scope=MemoryScope.PROJECT, content=content, project=project,
-            tags=tags or [], metadata=metadata,
+            user_id=user_id, tags=tags or [], metadata=metadata,
         ))
 
     # -- long-term layer -----------------------------------------
     def record_experience(self, content: str, project: Optional[str] = None,
-                          tags: Optional[list[str]] = None, **metadata) -> MemoryRecord:
+                          tags: Optional[list[str]] = None, user_id: Optional[str] = None, **metadata) -> MemoryRecord:
         """Store a durable engineering lesson: an incident, bug, or the fix
         that resolved it — the corpus long-term retrieval draws on."""
         return self.store.add(MemoryRecord(
             scope=MemoryScope.LONG_TERM, content=content, project=project,
-            tags=tags or [], metadata=metadata,
+            user_id=user_id, tags=tags or [], metadata=metadata,
         ))
 
     # -- retrieval that influences decisions ---------------------
     def recall_experience(self, query: str, project: Optional[str] = None,
-                          limit: int = 3, min_score: float = 0.05) -> list[MemoryResult]:
+                          limit: int = 3, min_score: float = 0.05, user_id: Optional[str] = None) -> list[MemoryResult]:
         """Find similar past incidents/fixes to inform the current plan."""
         return self.store.search(
-            query, scope=MemoryScope.LONG_TERM, limit=limit, min_score=min_score,
+            query, user_id=user_id, scope=MemoryScope.LONG_TERM, limit=limit, min_score=min_score,
         )
 
     def recall_project(self, project: str, query: str,
-                       limit: int = 3) -> list[MemoryResult]:
+                       limit: int = 3, user_id: Optional[str] = None) -> list[MemoryResult]:
         return self.store.search(
-            query, scope=MemoryScope.PROJECT, project=project, limit=limit,
+            query, user_id=user_id, scope=MemoryScope.PROJECT, project=project, limit=limit,
         )
 
-    def session_trace(self, session_id: str, limit: int = 200) -> list[MemoryRecord]:
-        return self.store.list(scope=MemoryScope.SESSION, session_id=session_id,
+    def session_trace(self, session_id: str, limit: int = 200, user_id: Optional[str] = None) -> list[MemoryRecord]:
+        return self.store.list(user_id=user_id, scope=MemoryScope.SESSION, session_id=session_id,
                                limit=limit)
 
     def close(self) -> None:

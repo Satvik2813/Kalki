@@ -24,6 +24,7 @@ from config.settings import Settings, get_settings
 from memory.manager import MemoryManager
 from models.registry import get_provider
 from shared.contracts import AgentEvent, AgentState, ExecutionStatus
+from backend.persistence import RunStore
 
 
 @dataclass
@@ -46,22 +47,29 @@ class KalkiService:
         self.provider = get_provider(settings=self.settings)
         self.memory = MemoryManager(settings=self.settings)
         self.registry = registry or register_builtins(ToolRegistry())
+        self.run_store = RunStore(self.settings)
         self._runs: dict[str, RunHandle] = {}
         self._lock = threading.Lock()
 
+    def _persist_event(self, handle: RunHandle, event: AgentEvent) -> None:
+        self.run_store.save_event(event)
+        self.run_store.save_state(handle.state)
+
     # ── lifecycle ───────────────────────────────────────────────
     def create(self, objective: str, project: Optional[str] = None,
-               autonomy: Optional[str] = None) -> AgentState:
+               autonomy: Optional[str] = None, user_id: Optional[str] = None) -> AgentState:
         bus = EventBus()
         perms = PermissionManager(autonomy=autonomy or self.settings.autonomy)
         orch = Orchestrator(
             provider=self.provider, memory=self.memory, registry=self.registry,
             settings=self.settings, event_bus=bus, permissions=perms,
         )
-        state = AgentState(objective=objective, project=project)
+        state = AgentState(objective=objective, project=project, user_id=user_id)
         handle = RunHandle(state=state, orchestrator=orch, events=bus)
+        bus.subscribe(lambda e: self._persist_event(handle, e))
         with self._lock:
             self._runs[state.id] = handle
+        self.run_store.save_state(state)
         return state
 
     def _drive(self, handle: RunHandle, approvals: Optional[list[str]] = None) -> None:
@@ -102,19 +110,19 @@ class KalkiService:
     def subscribe(self, run_id: str, fn):
         return self._require(run_id).events.subscribe(fn)
 
-    def list_runs(self) -> list[AgentState]:
+    def list_runs(self, user_id: Optional[str] = None) -> list[AgentState]:
         with self._lock:
-            return [h.state for h in self._runs.values()]
+            return [h.state for h in self._runs.values() if not user_id or h.state.user_id == user_id]
 
     def status(self, run_id: str) -> ExecutionStatus:
         return self._require(run_id).state.status
 
     # ── memory passthrough (for GET /api/memory, /api/projects) ──
-    def recent_memories(self, limit: int = 50) -> list[dict]:
-        return [r.to_dict() for r in self.memory.store.list(limit=limit)]
+    def recent_memories(self, limit: int = 50, user_id: Optional[str] = None) -> list[dict]:
+        return [r.to_dict() for r in self.memory.store.list(limit=limit, user_id=user_id)]
 
-    def projects(self) -> list[str]:
-        seen = {r.project for r in self.memory.store.list(limit=1000) if r.project}
+    def projects(self, user_id: Optional[str] = None) -> list[str]:
+        seen = {r.project for r in self.memory.store.list(limit=1000, user_id=user_id) if r.project}
         return sorted(seen)
 
     # ── internal ────────────────────────────────────────────────

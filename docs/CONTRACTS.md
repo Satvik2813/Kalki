@@ -58,6 +58,21 @@ status, events, retrieved_memories, scratch). `ExecutionResult` is the terminal
 report (`status`, `verified`, `summary`, `error`).
 `ExecutionStatus ∈ {completed, failed, blocked, awaiting_approval, running}`.
 
+```python
+class AgentState(BaseModel):
+    id: str                   # Unique run identifier
+    user_id: Optional[str]    # ID of the user owning this run
+    objective: str            # Original goal
+    project: Optional[str]    # Project scoping (for memory separation)
+    status: ExecutionStatus   # RUNNING | COMPLETED | FAILED | BLOCKED | AWAITING_APPROVAL
+    node: str                 # Current node in orchestrator state machine
+    plan: Optional[Plan]      # Current execution plan
+    current_task_id: Optional[str]
+    plan_revisions: int       # Tracks how many times we've had to replan
+    error: Optional[str]      # Top-level failure reason if FAILED
+    retrieved_memories: list[MemoryResult]
+```
+
 ## Authoring a Tool (Dev 3)
 
 ```python

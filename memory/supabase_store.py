@@ -20,6 +20,7 @@ _DDL = """
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TABLE IF NOT EXISTS kalki_memories (
     id          TEXT PRIMARY KEY,
+    user_id     TEXT,
     scope       TEXT NOT NULL,
     content     TEXT NOT NULL,
     project     TEXT,
@@ -29,6 +30,7 @@ CREATE TABLE IF NOT EXISTS kalki_memories (
     embedding   VECTOR(%(dim)s),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+CREATE INDEX IF NOT EXISTS idx_kalki_mem_user    ON kalki_memories(user_id);
 CREATE INDEX IF NOT EXISTS idx_kalki_mem_scope   ON kalki_memories(scope);
 CREATE INDEX IF NOT EXISTS idx_kalki_mem_project ON kalki_memories(project);
 """
@@ -61,20 +63,23 @@ class SupabaseMemoryStore(MemoryStore):
         with self._conn.cursor() as cur:
             cur.execute(
                 """INSERT INTO kalki_memories
-                   (id, scope, content, project, session_id, tags, metadata,
+                   (id, user_id, scope, content, project, session_id, tags, metadata,
                     embedding, created_at)
-                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s, now())
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s, now())
                    ON CONFLICT (id) DO UPDATE SET content = EXCLUDED.content""",
-                (record.id, record.scope.value, record.content, record.project,
+                (record.id, record.user_id, record.scope.value, record.content, record.project,
                  record.session_id, json.dumps(record.tags),
                  json.dumps(record.metadata), self._vec_literal(record.embedding)),
             )
         return record
 
-    def search(self, query, *, scope=None, project=None, session_id=None,
+    def search(self, query, *, user_id=None, scope=None, project=None, session_id=None,
                limit=5, min_score=0.0):
         qv = self._vec_literal(embed(query, self.embedding_dim))
         clauses, params = [], []
+        if user_id is not None:
+            clauses.append("user_id = %s")
+            params.append(user_id)
         if scope is not None:
             clauses.append("scope = %s")
             params.append(scope.value if isinstance(scope, MemoryScope) else scope)
@@ -88,7 +93,7 @@ class SupabaseMemoryStore(MemoryStore):
         # cosine distance operator <=> ; similarity = 1 - distance
         sql = (
             f"SELECT id, scope, content, project, session_id, tags, metadata, "
-            f"created_at, 1 - (embedding <=> %s) AS score "
+            f"created_at, user_id, 1 - (embedding <=> %s) AS score "
             f"FROM kalki_memories {where} ORDER BY embedding <=> %s LIMIT %s"
         )
         args = [qv] + params + [qv, limit]
@@ -97,7 +102,7 @@ class SupabaseMemoryStore(MemoryStore):
         with self._conn.cursor() as cur:
             cur.execute(sql, args)
             for row in cur.fetchall():
-                score = float(row[8])
+                score = float(row[9])
                 if score < min_score:
                     continue
                 rec = MemoryRecord(
@@ -106,12 +111,13 @@ class SupabaseMemoryStore(MemoryStore):
                     tags=row[5] if isinstance(row[5], list) else json.loads(row[5] or "[]"),
                     metadata=row[6] if isinstance(row[6], dict) else json.loads(row[6] or "{}"),
                     created_at=str(row[7]),
+                    user_id=row[8],
                 )
                 out.append(MemoryResult(record=rec, score=round(score, 4)))
         return out
 
-    def list(self, *, scope=None, project=None, session_id=None, limit=100):
-        results = self.search("", scope=scope, project=project,
+    def list(self, *, user_id=None, scope=None, project=None, session_id=None, limit=100):
+        results = self.search("", user_id=user_id, scope=scope, project=project,
                               session_id=session_id, limit=limit)
         return [r.record for r in results]
 

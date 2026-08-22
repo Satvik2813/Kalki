@@ -19,6 +19,7 @@ from shared.contracts import MemoryRecord, MemoryResult, MemoryScope
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS memories (
     id          TEXT PRIMARY KEY,
+    user_id     TEXT,
     scope       TEXT NOT NULL,
     content     TEXT NOT NULL,
     project     TEXT,
@@ -28,6 +29,7 @@ CREATE TABLE IF NOT EXISTS memories (
     embedding   TEXT NOT NULL DEFAULT '[]',
     created_at  TEXT NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_mem_user    ON memories(user_id);
 CREATE INDEX IF NOT EXISTS idx_mem_scope   ON memories(scope);
 CREATE INDEX IF NOT EXISTS idx_mem_project ON memories(project);
 CREATE INDEX IF NOT EXISTS idx_mem_session ON memories(session_id);
@@ -51,11 +53,12 @@ class LocalMemoryStore(MemoryStore):
         with self._lock, self._conn:
             self._conn.execute(
                 """INSERT OR REPLACE INTO memories
-                   (id, scope, content, project, session_id, tags, metadata,
+                   (id, user_id, scope, content, project, session_id, tags, metadata,
                     embedding, created_at)
-                   VALUES (?,?,?,?,?,?,?,?,?)""",
+                   VALUES (?,?,?,?,?,?,?,?,?,?)""",
                 (
                     record.id,
+                    record.user_id,
                     record.scope.value,
                     record.content,
                     record.project,
@@ -69,8 +72,11 @@ class LocalMemoryStore(MemoryStore):
         return record
 
     # -- reads ---------------------------------------------------
-    def _rows(self, scope, project, session_id, limit):
+    def _rows(self, user_id, scope, project, session_id, limit):
         clauses, params = [], []
+        if user_id is not None:
+            clauses.append("user_id = ?")
+            params.append(user_id)
         if scope is not None:
             clauses.append("scope = ?")
             params.append(scope.value if isinstance(scope, MemoryScope) else scope)
@@ -90,6 +96,7 @@ class LocalMemoryStore(MemoryStore):
     def _to_record(row: sqlite3.Row) -> MemoryRecord:
         return MemoryRecord(
             id=row["id"],
+            user_id=row["user_id"],
             scope=MemoryScope(row["scope"]),
             content=row["content"],
             project=row["project"],
@@ -100,15 +107,15 @@ class LocalMemoryStore(MemoryStore):
             created_at=row["created_at"],
         )
 
-    def list(self, *, scope=None, project=None, session_id=None, limit=100):
-        rows = self._rows(scope, project, session_id, limit)
+    def list(self, *, user_id=None, scope=None, project=None, session_id=None, limit=100):
+        rows = self._rows(user_id, scope, project, session_id, limit)
         return [self._to_record(r) for r in rows]
 
-    def search(self, query, *, scope=None, project=None, session_id=None,
+    def search(self, query, *, user_id=None, scope=None, project=None, session_id=None,
                limit=5, min_score=0.0):
         qv = embed(query, self.embedding_dim)
         # Pull a candidate window (scope/project filtered) then rank in-process.
-        rows = self._rows(scope, project, session_id, limit=1000)
+        rows = self._rows(user_id, scope, project, session_id, limit=1000)
         scored: list[MemoryResult] = []
         for r in rows:
             rec = self._to_record(r)

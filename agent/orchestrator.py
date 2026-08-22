@@ -139,11 +139,11 @@ class Orchestrator:
         self.events.publish(EventType.LOG, state.id,
                             f"Understanding objective: {state.objective}")
         self.memory.record_session(state.id, f"OBJECTIVE: {state.objective}",
-                                   tags=["objective"], project=state.project)
+                                   tags=["objective"], project=state.project, user_id=state.user_id)
         return CREATE_PLAN
 
     def _create_plan(self, state: AgentState) -> str:
-        plan, recalled = self.planner.create_plan(state.objective, state.project)
+        plan, recalled = self.planner.create_plan(state.objective, state.project, state.user_id)
         state.plan = plan
         state.retrieved_memories = recalled
         if recalled:
@@ -157,7 +157,7 @@ class Orchestrator:
                             plan=plan.to_dict())
         self.memory.record_session(
             state.id, f"PLAN: {[t.description for t in plan.tasks]}",
-            tags=["plan"], project=state.project,
+            tags=["plan"], project=state.project, user_id=state.user_id,
         )
         return SELECT_NEXT
 
@@ -245,7 +245,7 @@ class Orchestrator:
             task.status = TaskStatus.COMPLETED
             self.memory.record_session(
                 state.id, f"TASK OK [{task.id}] {task.description}",
-                tags=["task", "success"], project=state.project,
+                tags=["task", "success"], project=state.project, user_id=state.user_id,
             )
             self.events.publish(EventType.TASK_COMPLETED, state.id,
                                 task.description, task_id=task.id)
@@ -253,7 +253,7 @@ class Orchestrator:
         task.error = task.result.error
         self.memory.record_session(
             state.id, f"TASK FAIL [{task.id}] {task.description}: {task.error}",
-            tags=["task", "failure"], project=state.project,
+            tags=["task", "failure"], project=state.project, user_id=state.user_id,
         )
         return DECIDE
 
@@ -317,7 +317,7 @@ class Orchestrator:
         verified = bool(state.scratch.get("verification", {}).get("verified"))
         lesson = self._compose_lesson(state, outcome, verified)
         self.memory.record_experience(
-            lesson, project=state.project,
+            lesson, project=state.project, user_id=state.user_id,
             tags=["incident", outcome], objective=state.objective,
             verified=verified,
         )

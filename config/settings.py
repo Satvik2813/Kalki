@@ -56,6 +56,7 @@ class Settings:
     local_db_path: str = "kalki_local.sqlite3"
     supabase_url: str = ""
     supabase_service_role_key: str = ""
+    supabase_jwt_secret: str = ""
     supabase_db_url: str = ""
     embedding_dim: int = 384
 
@@ -89,6 +90,7 @@ class Settings:
             local_db_path=_get("KALKI_LOCAL_DB_PATH", "kalki_local.sqlite3"),
             supabase_url=_get("SUPABASE_URL", ""),
             supabase_service_role_key=_get("SUPABASE_SERVICE_ROLE_KEY", ""),
+            supabase_jwt_secret=_get("SUPABASE_JWT_SECRET", ""),
             supabase_db_url=_get("SUPABASE_DB_URL", ""),
             embedding_dim=_get_int("KALKI_EMBEDDING_DIM", 384),
             autonomy=_get("KALKI_AUTONOMY", "supervised").lower(),

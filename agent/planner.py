@@ -27,12 +27,12 @@ class Planner:
 
     # -- initial planning ----------------------------------------
     def create_plan(
-        self, objective: str, project: Optional[str] = None
+        self, objective: str, project: Optional[str] = None, user_id: Optional[str] = None
     ) -> tuple[Plan, list[MemoryResult]]:
         recalled: list[MemoryResult] = []
         context = ""
         if self.memory:
-            recalled = self.memory.recall_experience(objective, project=project)
+            recalled = self.memory.recall_experience(objective, project=project, user_id=user_id)
             if recalled:
                 lines = [f"- ({m.score:.2f}) {m.record.content}" for m in recalled]
                 context = "Relevant past engineering experience:\n" + "\n".join(lines)
