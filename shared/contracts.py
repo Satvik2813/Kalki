@@ -284,6 +284,7 @@ class MemoryRecord:
     scope: MemoryScope
     content: str
     id: str = field(default_factory=lambda: new_id("mem"))
+    user_id: Optional[str] = None
     project: Optional[str] = None
     session_id: Optional[str] = None
     tags: list[str] = field(default_factory=list)
@@ -302,6 +303,7 @@ class MemoryRecord:
             scope=MemoryScope(d["scope"]),
             content=d["content"],
             id=d.get("id", new_id("mem")),
+            user_id=d.get("user_id"),
             project=d.get("project"),
             session_id=d.get("session_id"),
             tags=d.get("tags", []) or [],
@@ -331,6 +333,7 @@ class AgentEvent:
 
     type: EventType
     task_id: str                       # objective/run id
+    user_id: Optional[str] = None
     message: str = ""
     data: dict[str, Any] = field(default_factory=dict)
     id: str = field(default_factory=lambda: new_id("evt"))
@@ -354,6 +357,7 @@ class AgentState:
 
     objective: str
     id: str = field(default_factory=lambda: new_id("run"))
+    user_id: Optional[str] = None
     project: Optional[str] = None
     status: ExecutionStatus = ExecutionStatus.RUNNING
     node: str = "START"                       # current state-machine node
@@ -373,6 +377,7 @@ class AgentState:
     def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "objective": self.objective,
             "project": self.project,
             "status": self.status.value,
@@ -393,6 +398,7 @@ class AgentState:
         st = cls(
             objective=d["objective"],
             id=d.get("id", new_id("run")),
+            user_id=d.get("user_id"),
             project=d.get("project"),
             status=ExecutionStatus(d.get("status", "running")),
             node=d.get("node", "START"),

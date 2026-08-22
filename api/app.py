@@ -23,10 +23,13 @@ import asyncio
 import json
 from typing import Optional
 
+import os
 try:
-    from fastapi import FastAPI, HTTPException, Query
+    from fastapi import FastAPI, HTTPException, Query, Depends, Request
     from fastapi.responses import StreamingResponse
+    from fastapi.staticfiles import StaticFiles
     from pydantic import BaseModel
+    import jwt
 except ImportError as exc:  # pragma: no cover - env dependent
     raise RuntimeError(
         "The API layer needs FastAPI. Install with: pip install 'kalki[api]'"
@@ -47,6 +50,21 @@ class ApproveRequest(BaseModel):
     tools: list[str] = []
 
 
+def get_current_user(req: Request) -> Optional[str]:
+    auth = req.headers.get("Authorization")
+    if not auth or not auth.startswith("Bearer "):
+        return None
+    token = auth.split(" ")[1]
+    svc: KalkiService = req.app.state.service
+    secret = getattr(svc.settings, "supabase_jwt_secret", "")
+    if not secret:
+        return None
+    try:
+        payload = jwt.decode(token, secret, algorithms=["HS256"], options={"verify_aud": False})
+        return payload.get("sub")
+    except Exception:
+        raise HTTPException(401, "Invalid token")
+
 def create_app(service: Optional[KalkiService] = None) -> "FastAPI":
     app = FastAPI(title="KALKI", version="0.1.0",
                   description="Autonomous AI software engineer — core API.")
@@ -58,20 +76,23 @@ def create_app(service: Optional[KalkiService] = None) -> "FastAPI":
         return {"status": "ok", "service": "kalki", "runs": len(svc.list_runs())}
 
     @app.post("/api/tasks")
-    def create_task(req: CreateTaskRequest):
-        state = svc.create(req.objective, project=req.project, autonomy=req.autonomy)
+    def create_task(req: CreateTaskRequest, user_id: Optional[str] = Depends(get_current_user)):
+        state = svc.create(req.objective, project=req.project, autonomy=req.autonomy, user_id=user_id)
         if req.start:
             svc.start(state.id)
         return state.to_dict()
 
     @app.get("/api/tasks")
-    def list_tasks():
-        return {"tasks": [s.to_dict() for s in svc.list_runs()]}
+    def list_tasks(user_id: Optional[str] = Depends(get_current_user)):
+        return {"tasks": [s.to_dict() for s in svc.list_runs(user_id=user_id)]}
 
     @app.get("/api/tasks/{run_id}")
-    def get_task(run_id: str):
+    def get_task(run_id: str, user_id: Optional[str] = Depends(get_current_user)):
         try:
-            return svc.get(run_id).to_dict()
+            state = svc.get(run_id)
+            if state.user_id and state.user_id != user_id:
+                raise HTTPException(403, "access denied")
+            return state.to_dict()
         except KeyError:
             raise HTTPException(404, "run not found")
 
@@ -130,12 +151,17 @@ def create_app(service: Optional[KalkiService] = None) -> "FastAPI":
         return StreamingResponse(event_gen(), media_type="text/event-stream")
 
     @app.get("/api/projects")
-    def projects():
-        return {"projects": svc.projects()}
+    def projects(user_id: Optional[str] = Depends(get_current_user)):
+        return {"projects": svc.projects(user_id=user_id)}
 
     @app.get("/api/memory")
-    def memory(limit: int = Query(50)):
-        return {"memories": svc.recent_memories(limit=limit)}
+    def memory(limit: int = Query(50), user_id: Optional[str] = Depends(get_current_user)):
+        return {"memories": svc.recent_memories(limit=limit, user_id=user_id)}
+
+    # Mount static frontend files if directory exists
+    frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+    if os.path.exists(frontend_dir):
+        app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 
     return app
 
