@@ -1,7 +1,14 @@
-"""Hugging Face Serverless Inference provider.
+"""Hugging Face Inference Providers (router) provider.
 
-This provider communicates with Hugging Face's OpenAI-compatible serverless
-inference API using the standard urllib library (no external SDK required).
+This provider communicates with Hugging Face's OpenAI-compatible inference
+*router* using the standard urllib library (no external SDK required).
+
+Endpoint note: the legacy ``api-inference.huggingface.co`` serverless host has
+been retired (it no longer resolves via DNS). The current, verified mechanism
+is the Inference Providers router at ``https://router.huggingface.co`` with the
+OpenAI-compatible path ``/v1/chat/completions`` — the model name travels in the
+JSON payload and the router selects a serving provider. This was confirmed live
+against a real model response before the endpoint here was updated.
 """
 from __future__ import annotations
 
@@ -17,15 +24,15 @@ class HuggingFaceProvider(ModelProvider):
     name = "huggingface"
 
     def __init__(
-        self, model: str = "Qwen/Qwen3-Coder-Next", api_key: str = "", timeout: float = 30.0, **kw: Any
+        self, model: str = "meta-llama/Llama-3.1-8B-Instruct", api_key: str = "", timeout: float = 30.0, **kw: Any
     ) -> None:
         super().__init__(model=model, **kw)
         self.api_key = api_key
         self.timeout = timeout
-        # Hugging Face Serverless endpoints support OpenAI compatible routing via v1/chat/completions
-        # It usually takes the model name in the URL or the payload depending on the endpoint type.
-        # The base API for serverless is https://api-inference.huggingface.co/models/{model}/v1/chat/completions
-        self.base_url = "https://api-inference.huggingface.co"
+        # HF Inference Providers router — OpenAI-compatible. The model name is
+        # supplied in the JSON payload (not the URL); the router routes to a
+        # serving provider. Legacy api-inference.huggingface.co is retired.
+        self.base_url = "https://router.huggingface.co"
 
     def _post(self, path: str, payload: dict) -> dict:
         url = f"{self.base_url}{path}"
@@ -69,8 +76,9 @@ class HuggingFaceProvider(ModelProvider):
             "max_tokens": kwargs.get("max_tokens", 4096),
         }
         
-        # Path for OpenAI compatible completions on HF serverless
-        path = f"/models/{self.model}/v1/chat/completions"
+        # OpenAI-compatible chat completions on the HF router. The model is
+        # carried in the payload above, so the path is fixed.
+        path = "/v1/chat/completions"
 
         try:
             resp = self._post(path, payload)
