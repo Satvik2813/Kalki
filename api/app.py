@@ -168,6 +168,8 @@ def create_app(service: Optional[KalkiService] = None) -> "FastAPI":
 
     # Mount static frontend files if directory exists
     frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+    if not os.path.exists(frontend_dir):
+        frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public")
     if os.path.exists(frontend_dir):
         app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 

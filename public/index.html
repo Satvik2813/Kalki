@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KALKI — Autonomous AI Software Engineer</title>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Styles -->
+  <link rel="stylesheet" href="css/kalki-theme.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+  
+  <!-- View Container -->
+  <div id="app-container">
+
+    <!-- 1. LANDING VIEW -->
+    <section id="landing-view" class="view-section active">
+      <div class="landing-hero glass-panel">
+        <div class="glow-orb"></div>
+        <h1 class="text-gradient">KALKI</h1>
+        <h2>Autonomous AI Software Engineer</h2>
+        <p class="subtitle">From objective to deployment. KALKI plans, codes, tests, and deploys autonomously.</p>
+        <button id="btn-enter-kalki" class="btn btn-accent btn-large mt-4">Initialize KALKI</button>
+      </div>
+    </section>
+
+    <!-- 2. AUTH VIEW -->
+    <section id="auth-view" class="view-section hidden">
+      <div class="auth-card glass-panel">
+        <h2>Authentication</h2>
+        <p class="text-muted mb-4">Secure connection required for deployment tools.</p>
+        <button class="btn btn-primary w-100 mb-2" id="btn-auth-google" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.761H12.545z"/></svg>
+          Continue with Google (Deferred)
+        </button>
+        <button class="btn w-100" id="btn-auth-guest">Continue as Guest (Local Only)</button>
+      </div>
+    </section>
+
+    <!-- 3. PROJECT SELECTION VIEW -->
+    <section id="project-view" class="view-section hidden">
+      <div class="project-card glass-panel">
+        <h2>Select Project</h2>
+        <p class="text-muted mb-4">Choose your target engineering environment.</p>
+        
+        <div class="project-options">
+          <div class="project-option" id="opt-github">
+            <h3>GitHub Repository</h3>
+            <p class="text-muted">Remote PR workflow</p>
+          </div>
+          <div class="project-option" id="opt-vercel">
+            <h3>Vercel Project</h3>
+            <p class="text-muted">Cloud deployment</p>
+          </div>
+          <div class="project-option" id="opt-local">
+            <h3>Local Workspace</h3>
+            <p class="text-muted">Filesystem access</p>
+          </div>
+        </div>
+
+        <div class="mt-4 flex-between">
+          <button class="btn" id="btn-back-auth">Back</button>
+          <button class="btn btn-accent" id="btn-confirm-project" disabled>Confirm Environment</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. MAIN WORKSPACE VIEW -->
+    <section id="workspace-view" class="view-section hidden">
+      
+      <!-- Header Component Target -->
+      <div id="header-target"></div>
+
+      <!-- Objective Input Component Target -->
+      <div id="objective-target"></div>
+
+      <!-- Stage Pipeline Ribbon Component Target -->
+      <div id="stage-target"></div>
+
+      <!-- Main Workspace (Split View) -->
+      <main class="workspace-grid">
+        <!-- Left HERO: Live Execution Timeline -->
+        <section id="timeline-target" class="timeline-panel glass-panel"></section>
+
+        <!-- Right Work Area: Tabbed Control Center -->
+        <section class="control-tabs-panel glass-panel">
+          <nav class="tabs-header">
+            <button class="tab-btn active" data-tab="tab-plan">PLAN</button>
+            <button class="tab-btn" data-tab="tab-tools">TOOLS</button>
+            <button class="tab-btn" data-tab="tab-memory">MEMORY</button>
+            <button class="tab-btn" data-tab="tab-recovery">RECOVERY</button>
+            <button class="tab-btn" data-tab="tab-code">CODE DIFF</button>
+            <button class="tab-btn" data-tab="tab-tests">TESTS</button>
+            <button class="tab-btn" data-tab="tab-deploy">DEPLOYMENT</button>
+          </nav>
+
+          <div class="tab-content-area">
+            <div id="tab-plan" class="tab-pane active"></div>
+            <div id="tab-tools" class="tab-pane"></div>
+            <div id="tab-memory" class="tab-pane"></div>
+            <div id="tab-recovery" class="tab-pane"></div>
+            <div id="tab-code" class="tab-pane"></div>
+            <div id="tab-tests" class="tab-pane"></div>
+            <div id="tab-deploy" class="tab-pane"></div>
+          </div>
+        </section>
+      </main>
+    </section>
+
+  </div>
+
+  <!-- Entry Script -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
