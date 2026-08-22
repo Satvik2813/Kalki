@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "routes": [
-    { "src": "/health", "dest": "api/app.py" },
-    { "src": "/api/(.*)", "dest": "api/app.py" },
-    { "src": "/(.*)", "dest": "frontend/$1" }
+  "rewrites": [
+    { "source": "/health", "destination": "/api/app.py" },
+    { "source": "/api/(.*)", "destination": "/api/app.py" },
+    { "source": "/(.*)", "destination": "/frontend/$1" }
   ]
 }
