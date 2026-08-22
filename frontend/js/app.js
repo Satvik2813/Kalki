@@ -40,9 +40,9 @@ class KalkiApp {
       }
     });
 
-    // 2. Render Objective Input
-    renderObjectiveInput('#objective-target', {
-      onStart: (objective) => this.handleStartObjective(objective)
+    // 2. Render Onboarding Flow (Login -> Project -> Objective)
+    renderObjectiveInput('#onboarding-content', {
+      onStart: (objective, project) => this.handleStartObjective(objective, project)
     });
 
     // 3. Initialize Stage Ribbon
@@ -95,8 +95,8 @@ class KalkiApp {
     }
   }
 
-  handleStartObjective(objective) {
-    console.log(`[KALKI] Starting autonomous execution for objective: "${objective}"`);
+  handleStartObjective(objective, project) {
+    console.log(`[KALKI] Starting autonomous execution for objective: "${objective}" on project: "${project}"`);
 
     // Reset UI states
     this.stageRibbon.reset();
@@ -105,13 +105,13 @@ class KalkiApp {
     this.updateAgentStatusBadge('EXECUTING', 'badge-active');
 
     if (this.mode === 'demo') {
-      this.runMockExecution(objective);
+      this.runMockExecution(objective, project);
     } else {
-      this.runLiveAPIExecution(objective);
+      this.runLiveAPIExecution(objective, project);
     }
   }
 
-  runMockExecution(objective) {
+  runMockExecution(objective, project) {
     this.activeRunId = this.mock.startMockExecution(
       objective,
       (evt) => this.handleIncomingEvent(evt),
@@ -122,9 +122,9 @@ class KalkiApp {
     );
   }
 
-  async runLiveAPIExecution(objective) {
+  async runLiveAPIExecution(objective, project) {
     try {
-      const task = await this.api.createTask(objective, { start: true });
+      const task = await this.api.createTask(objective, { start: true, project: project });
       this.activeRunId = task.id;
 
       this.api.subscribeToEvents(

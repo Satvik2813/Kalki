@@ -243,7 +243,48 @@ class VercelRedeployTool(Tool):
         }, deploy_url=deploy_url)
 
 
+# ── vercel_list_projects ─────────────────────────────────────────
+class VercelListProjectsTool(Tool):
+    spec = ToolSpec(
+        name="vercel_list_projects",
+        description="List Vercel projects accessible to the token.",
+        parameters={
+            "limit": "int (optional, default 20) — number of projects to return",
+        },
+        risk=RiskLevel.SAFE,
+    )
+
+    def run(self, args: dict[str, Any], ctx: ToolContext) -> ToolResult:
+        token = _token()
+        if not token:
+            return _no_token(self.spec.name)
+        
+        limit = int(args.get("limit", 20))
+        try:
+            data = _vercel_call("GET", f"/v9/projects?limit={limit}", token)
+        except urllib.error.HTTPError as e:
+            return ToolResult.failure(
+                self.spec.name, f"Vercel API error: {e.code}",
+                FailureClass.TRANSIENT,
+            )
+        except (urllib.error.URLError, OSError) as e:
+            return ToolResult.failure(
+                self.spec.name, f"Vercel unreachable: {e}",
+                FailureClass.TRANSIENT,
+            )
+            
+        projects = []
+        for p in data.get("projects", []):
+            projects.append({
+                "id": p.get("id"),
+                "name": p.get("name"),
+                "framework": p.get("framework"),
+            })
+            
+        return ToolResult.success(self.spec.name, output=projects)
+
+
 # ── registration ─────────────────────────────────────────────────
 def register_vercel_tools(registry: ToolRegistry) -> None:
-    for cls in (VercelDeployTool, VercelStatusTool, VercelLogsTool, VercelRedeployTool):
+    for cls in (VercelDeployTool, VercelStatusTool, VercelLogsTool, VercelRedeployTool, VercelListProjectsTool):
         registry.register(cls())

@@ -365,11 +365,57 @@ class GitHubActionsStatusTool(Tool):
         return ToolResult.success(self.spec.name, output=runs)
 
 
+# ── github_search_repos ──────────────────────────────────────────
+class GitHubSearchReposTool(Tool):
+    spec = ToolSpec(
+        name="github_search_repos",
+        description="Search for repositories on GitHub.",
+        parameters={
+            "query": "str — search query (e.g., 'user:Satvik2813 kalki')",
+        },
+        risk=RiskLevel.SAFE,
+    )
+
+    def run(self, args: dict[str, Any], ctx: ToolContext) -> ToolResult:
+        token = _token()
+        if not token:
+            return _no_token(self.spec.name)
+        query = args.get("query")
+        if not query:
+            return ToolResult.failure(
+                self.spec.name, "missing 'query'", FailureClass.TOOL_ERROR
+            )
+        # Handle URL encoding for the query
+        import urllib.parse
+        encoded_query = urllib.parse.quote(query)
+        try:
+            data = _api_call("GET", f"/search/repositories?q={encoded_query}&per_page=10", token)
+        except urllib.error.HTTPError as e:
+            return ToolResult.failure(
+                self.spec.name, f"GitHub API error: {e.code} {e.reason}",
+                FailureClass.TRANSIENT,
+            )
+        except (urllib.error.URLError, OSError) as e:
+            return ToolResult.failure(
+                self.spec.name, f"GitHub unreachable: {e}",
+                FailureClass.TRANSIENT,
+            )
+        repos = []
+        for r in data.get("items", []):
+            repos.append({
+                "name": r.get("name"),
+                "full_name": r.get("full_name"),
+                "description": r.get("description"),
+                "html_url": r.get("html_url"),
+            })
+        return ToolResult.success(self.spec.name, output=repos)
+
+
 # ── registration ─────────────────────────────────────────────────
 def register_github_tools(registry: ToolRegistry) -> None:
     for cls in (
         GitHubGetRepoTool, GitHubListFilesTool, GitHubGetFileTool,
         GitHubCreateBranchTool, GitHubCreatePRTool, GitHubGetPRTool,
-        GitHubActionsStatusTool,
+        GitHubActionsStatusTool, GitHubSearchReposTool,
     ):
         registry.register(cls())
