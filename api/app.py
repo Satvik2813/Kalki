@@ -23,9 +23,11 @@ import asyncio
 import json
 from typing import Optional
 
+import os
 try:
     from fastapi import FastAPI, HTTPException, Query
     from fastapi.responses import StreamingResponse
+    from fastapi.staticfiles import StaticFiles
     from pydantic import BaseModel
 except ImportError as exc:  # pragma: no cover - env dependent
     raise RuntimeError(
@@ -136,6 +138,11 @@ def create_app(service: Optional[KalkiService] = None) -> "FastAPI":
     @app.get("/api/memory")
     def memory(limit: int = Query(50)):
         return {"memories": svc.recent_memories(limit=limit)}
+
+    # Mount static frontend files if directory exists
+    frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+    if os.path.exists(frontend_dir):
+        app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 
     return app
 

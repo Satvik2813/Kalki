@@ -1,0 +1,213 @@
+/* ==========================================================================
+   KALKI — AUTONOMOUS AI SOFTWARE ENGINEER
+   Theme & Design System Tokens
+   ========================================================================== */
+
+:root {
+  /* Color Palette - Dark Engineering Environment */
+  --bg-darkest: #05070a;
+  --bg-dark: #090d14;
+  --bg-surface: #0d121d;
+  --bg-surface-hover: #131b2a;
+  --bg-panel: #111724;
+  --bg-panel-header: #0e1420;
+
+  /* Text Colors */
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-muted: #484f58;
+  --text-bright: #ffffff;
+
+  /* Accent & State Colors */
+  --accent-cyan: #00f0ff;
+  --accent-cyan-glow: rgba(0, 240, 255, 0.25);
+  --accent-blue: #38bdf8;
+  --accent-blue-glow: rgba(56, 189, 248, 0.25);
+  --accent-purple: #a371f7;
+  --accent-purple-glow: rgba(163, 113, 247, 0.25);
+
+  /* Status Colors */
+  --color-success: #3fb950;
+  --color-success-bg: rgba(63, 185, 80, 0.12);
+  --color-success-border: rgba(63, 185, 80, 0.35);
+
+  --color-failure: #f85149;
+  --color-failure-bg: rgba(248, 81, 73, 0.12);
+  --color-failure-border: rgba(248, 81, 73, 0.35);
+
+  --color-warning: #d29922;
+  --color-warning-bg: rgba(210, 153, 34, 0.12);
+  --color-warning-border: rgba(210, 153, 34, 0.35);
+
+  --color-active: #58a6ff;
+  --color-active-bg: rgba(88, 166, 255, 0.12);
+  --color-active-border: rgba(88, 166, 255, 0.35);
+
+  --color-memory: #a371f7;
+  --color-memory-bg: rgba(163, 113, 247, 0.12);
+  --color-memory-border: rgba(163, 113, 247, 0.35);
+
+  /* Borders & Dividers */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-main: rgba(255, 255, 255, 0.12);
+  --border-cyan: rgba(0, 240, 255, 0.4);
+  --border-glow: 0 0 10px rgba(0, 240, 255, 0.2);
+
+  /* Fonts */
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Layout Spacing */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+/* Reset & Base Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-darkest);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Background Engineering Grid Pattern */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-main);
+  border-radius: var(--radius-xs);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Utility Monospace Classes */
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Utility Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.badge-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: var(--color-success-border);
+}
+
+.badge-failure {
+  background: var(--color-failure-bg);
+  color: var(--color-failure);
+  border-color: var(--color-failure-border);
+}
+
+.badge-warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-color: var(--color-warning-border);
+}
+
+.badge-active {
+  background: var(--color-active-bg);
+  color: var(--color-active);
+  border-color: var(--color-active-border);
+}
+
+.badge-cyan {
+  background: rgba(0, 240, 255, 0.1);
+  color: var(--accent-cyan);
+  border-color: rgba(0, 240, 255, 0.3);
+}
+
+.badge-purple {
+  background: var(--color-memory-bg);
+  color: var(--color-memory);
+  border-color: var(--color-memory-border);
+}
+
+/* Status Indicator Dot */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.active {
+  background-color: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+.status-dot.success {
+  background-color: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
+}
+
+.status-dot.failure {
+  background-color: var(--color-failure);
+  box-shadow: 0 0 6px var(--color-failure);
+}
+
+.status-dot.warning {
+  background-color: var(--color-warning);
+  box-shadow: 0 0 6px var(--color-warning);
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 8px var(--accent-cyan);
+  }
+  50% {
+    opacity: 0.4;
+    box-shadow: 0 0 2px var(--accent-cyan);
+  }
+}
