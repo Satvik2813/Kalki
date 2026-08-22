@@ -11,10 +11,16 @@ requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Satvik" }]
 
-# Core dependencies are intentionally ZERO: the KALKI core (contracts,
-# planner, orchestrator, local memory, mock model) runs on the stdlib
-# alone so the closed-loop engine and its tests work fully offline.
-dependencies = []
+# Core dependencies populated for Vercel deployment
+dependencies = [
+  "fastapi>=0.110",
+  "sse-starlette>=2.0",
+  "PyJWT>=2.8",
+  "python-dotenv>=1.0",
+  "psycopg[binary]>=3.1",
+  "openai>=1.40",
+  "anthropic>=0.34"
+]
 
 [project.optional-dependencies]
 # API / realtime layer
