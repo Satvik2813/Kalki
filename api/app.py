@@ -175,7 +175,4 @@ def create_app(service: Optional[KalkiService] = None) -> "FastAPI":
 
 
 # Module-level app for `uvicorn api.app:app`
-try:
-    app = create_app()
-except Exception:  # pragma: no cover - keeps import cheap when service can't init
-    app = None
+app = create_app()
