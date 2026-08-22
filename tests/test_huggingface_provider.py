@@ -22,7 +22,7 @@ def test_huggingface_provider_formatting():
         mock_urlopen.assert_called_once()
         req = mock_urlopen.call_args[0][0]
         
-        assert req.full_url == "https://api-inference.huggingface.co/models/Qwen/Qwen3-Coder-Next/v1/chat/completions"
+        assert req.full_url == "https://router.huggingface.co/v1/chat/completions"
         assert req.get_header("Authorization") == "Bearer hf_test_key"
         assert req.get_header("Content-type") == "application/json"
         

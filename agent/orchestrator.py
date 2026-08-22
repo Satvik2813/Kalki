@@ -121,7 +121,15 @@ class Orchestrator:
                 state.error = f"unknown node {state.node!r}"
                 state.status = ExecutionStatus.FAILED
                 break
-            next_node = handler(self, state)
+            try:
+                next_node = handler(self, state)
+            except Exception as exc:
+                # A handler raised — most likely a real model/provider call in
+                # CREATE_PLAN. Convert it into KALKI's existing terminal failure
+                # state (FAILED + OBJECTIVE_FAILED) instead of letting it escape
+                # the loop and leave the run hanging. Fallback selection is
+                # untouched; this is a genuine call-time failure, not a retry.
+                next_node = self._fail_from_exception(state, exc)
             state.node = next_node
             state.touch()
             # Pause the drive loop when we need a human.
@@ -345,6 +353,29 @@ class Orchestrator:
             f"OUTCOME: {outcome} (verified={verified})\n"
             f"STEPS:\n" + "\n".join(steps)
         )
+
+    def _fail_from_exception(self, state: AgentState, exc: Exception) -> str:
+        """Turn an unhandled handler/provider exception into KALKI's existing
+        FAILED terminal state and an ``OBJECTIVE_FAILED`` event, preserving the
+        error detail. Returns ``END``. Never re-raises: a best-effort attempt to
+        persist the failure experience is guarded so a second failure (e.g. the
+        memory backend being down) cannot escape."""
+        detail = f"{state.node}: {type(exc).__name__}: {exc}"
+        state.status = ExecutionStatus.FAILED
+        state.error = detail[:500]
+        self.events.publish(EventType.OBJECTIVE_FAILED, state.id, state.error,
+                            node=state.node, error_type=type(exc).__name__)
+        try:
+            self.memory.record_experience(
+                self._compose_lesson(state, "failed", False),
+                project=state.project, user_id=state.user_id,
+                tags=["incident", "failed", "exception"], objective=state.objective,
+            )
+            self.events.publish(EventType.MEMORY_STORED, state.id,
+                                "failure experience persisted")
+        except Exception:
+            pass
+        return END
 
     def _result(self, state: AgentState) -> ExecutionResult:
         verified = bool(state.scratch.get("verification", {}).get("verified"))
