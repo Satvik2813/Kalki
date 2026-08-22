@@ -168,3 +168,32 @@ class TestGitHubActionsStatus:
         assert res.ok
         assert len(res.output) == 1
         assert res.output[0]["conclusion"] == "success"
+
+
+class TestGitHubSearchRepos:
+    def test_no_token(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+        reg = _reg()
+        res = reg.get("github_search_repos").invoke({"query": "test"}, _ctx(tmp_path))
+        assert not res.ok
+        assert res.failure_class == FailureClass.PERMISSION
+
+    def test_missing_query(self, tmp_path, monkeypatch):
+        _with_token(monkeypatch)
+        reg = _reg()
+        res = reg.get("github_search_repos").invoke({}, _ctx(tmp_path))
+        assert not res.ok
+        assert res.failure_class == FailureClass.TOOL_ERROR
+
+    def test_success(self, tmp_path, monkeypatch):
+        _with_token(monkeypatch)
+        mock_data = {"items": [{
+            "name": "Kalki", "full_name": "Satvik2813/Kalki",
+            "description": "AI Engineer", "html_url": "https://github.com/...",
+        }]}
+        with _mock_api(mock_data):
+            reg = _reg()
+            res = reg.get("github_search_repos").invoke({"query": "kalki"}, _ctx(tmp_path))
+        assert res.ok
+        assert len(res.output) == 1
+        assert res.output[0]["name"] == "Kalki"

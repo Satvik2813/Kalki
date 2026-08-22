@@ -125,3 +125,24 @@ class TestVercelRedeploy:
             )
         assert res.ok
         assert res.output["id"] == "dpl_456"
+
+
+class TestVercelListProjects:
+    def test_no_token(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("VERCEL_TOKEN", raising=False)
+        reg = _reg()
+        res = reg.get("vercel_list_projects").invoke({}, _ctx(tmp_path))
+        assert not res.ok
+        assert res.failure_class == FailureClass.PERMISSION
+
+    def test_success(self, tmp_path, monkeypatch):
+        _with_token(monkeypatch)
+        mock_data = {"projects": [{
+            "id": "prj_123", "name": "kalki", "framework": "nextjs"
+        }]}
+        with _mock_vercel(mock_data):
+            reg = _reg()
+            res = reg.get("vercel_list_projects").invoke({}, _ctx(tmp_path))
+        assert res.ok
+        assert len(res.output) == 1
+        assert res.output[0]["name"] == "kalki"

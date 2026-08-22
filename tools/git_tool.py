@@ -239,10 +239,88 @@ class GitCommitTool(Tool):
         )
 
 
+# ── git_push ─────────────────────────────────────────────────────
+class GitPushTool(Tool):
+    spec = ToolSpec(
+        name="git_push",
+        description="Push commits to a remote. Pushing to protected branches is blocked.",
+        parameters={
+            "remote": "str (optional, default 'origin')",
+            "branch": "str (optional, default current branch)",
+        },
+        risk=RiskLevel.ELEVATED,
+    )
+
+    def run(self, args: dict[str, Any], ctx: ToolContext) -> ToolResult:
+        remote = args.get("remote", "origin")
+        branch = args.get("branch")
+        
+        if not branch:
+            # Detect current branch
+            branch_proc = _git(ctx, "branch", "--show-current")
+            if branch_proc.returncode != 0:
+                return ToolResult.failure(
+                    self.spec.name, "could not determine current branch",
+                    FailureClass.TOOL_ERROR,
+                )
+            branch = branch_proc.stdout.strip()
+            
+        if not branch:
+            return ToolResult.failure(
+                self.spec.name, "not currently on any branch",
+                FailureClass.TOOL_ERROR,
+            )
+            
+        if branch in _PROTECTED_BRANCHES:
+            return ToolResult.failure(
+                self.spec.name, f"pushing to protected branch '{branch}' is blocked",
+                FailureClass.PERMISSION,
+            )
+            
+        proc = _git(ctx, "push", remote, branch)
+        if proc.returncode != 0:
+            err = proc.stderr.strip() or proc.stdout.strip()
+            return ToolResult.failure(
+                self.spec.name, f"git push failed: {err}",
+                FailureClass.TOOL_ERROR,
+            )
+        return ToolResult.success(self.spec.name, output=proc.stdout.strip() or proc.stderr.strip())
+
+
+# ── git_pull ─────────────────────────────────────────────────────
+class GitPullTool(Tool):
+    spec = ToolSpec(
+        name="git_pull",
+        description="Pull commits from a remote.",
+        parameters={
+            "remote": "str (optional, default 'origin')",
+            "branch": "str (optional, default current branch)",
+        },
+        risk=RiskLevel.ELEVATED,
+    )
+
+    def run(self, args: dict[str, Any], ctx: ToolContext) -> ToolResult:
+        remote = args.get("remote", "origin")
+        branch = args.get("branch")
+        
+        cmd = ["pull", remote]
+        if branch:
+            cmd.append(branch)
+            
+        proc = _git(ctx, *cmd)
+        if proc.returncode != 0:
+            err = proc.stderr.strip() or proc.stdout.strip()
+            return ToolResult.failure(
+                self.spec.name, f"git pull failed: {err}",
+                FailureClass.TOOL_ERROR,
+            )
+        return ToolResult.success(self.spec.name, output=proc.stdout.strip() or proc.stderr.strip())
+
+
 # ── registration ─────────────────────────────────────────────────
 def register_git_tools(registry: ToolRegistry) -> None:
     for cls in (
         GitStatusTool, GitDiffTool, GitLogTool, GitBranchTool,
-        GitCheckoutTool, GitAddTool, GitCommitTool,
+        GitCheckoutTool, GitAddTool, GitCommitTool, GitPushTool, GitPullTool,
     ):
         registry.register(cls())

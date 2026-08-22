@@ -142,3 +142,41 @@ class TestGitCommit:
         reg = _reg()
         res = reg.get("git_commit").invoke({"message": "empty"}, ctx)
         assert not res.ok
+
+
+class TestGitPush:
+    def test_push_protected_branch(self, tmp_path):
+        ctx = _git_workspace(tmp_path)
+        # Create and checkout main
+        subprocess.run(["git", "checkout", "-b", "main"], cwd=str(tmp_path), capture_output=True)
+        reg = _reg()
+        res = reg.get("git_push").invoke({}, ctx)
+        assert not res.ok
+        assert res.failure_class == FailureClass.PERMISSION
+        assert "protected branch" in res.error
+
+    def test_push_unprotected_branch(self, tmp_path):
+        ctx = _git_workspace(tmp_path)
+        # Setup fake remote
+        subprocess.run(["git", "init", "--bare", "remote.git"], cwd=str(tmp_path.parent), capture_output=True)
+        subprocess.run(["git", "remote", "add", "origin", str(tmp_path.parent / "remote.git")], cwd=str(tmp_path), capture_output=True)
+        # Create feature branch
+        subprocess.run(["git", "checkout", "-b", "feature/test"], cwd=str(tmp_path), capture_output=True)
+        
+        reg = _reg()
+        res = reg.get("git_push").invoke({}, ctx)
+        assert res.ok
+
+
+class TestGitPull:
+    def test_pull_success(self, tmp_path):
+        ctx = _git_workspace(tmp_path)
+        # Setup fake remote
+        subprocess.run(["git", "init", "--bare", "remote.git"], cwd=str(tmp_path.parent), capture_output=True)
+        subprocess.run(["git", "remote", "add", "origin", str(tmp_path.parent / "remote.git")], cwd=str(tmp_path), capture_output=True)
+        # Push initial to bare repo so pull works
+        subprocess.run(["git", "push", "origin", "master"], cwd=str(tmp_path), capture_output=True)
+        
+        reg = _reg()
+        res = reg.get("git_pull").invoke({"branch": "master"}, ctx)
+        assert res.ok
