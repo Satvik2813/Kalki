@@ -16,6 +16,7 @@ from models.base import ModelProvider
 from models.direct import DirectAnthropicProvider, DirectOpenAIProvider
 from models.mock import MockProvider
 from models.omniroute import OmniRouteProvider
+from models.huggingface import HuggingFaceProvider
 
 log = logging.getLogger("kalki.models")
 
@@ -29,6 +30,7 @@ def build_provider(name: str, settings: Settings) -> ModelProvider:
             model=settings.model_name,
             base_url=settings.omniroute_base_url,
             api_key=settings.omniroute_api_key,
+            health_path=settings.omniroute_health_path,
         )
     if name == "anthropic":
         return DirectAnthropicProvider(
@@ -38,11 +40,15 @@ def build_provider(name: str, settings: Settings) -> ModelProvider:
         return DirectOpenAIProvider(
             model=settings.model_name, api_key=settings.openai_api_key
         )
+    if name == "huggingface":
+        return HuggingFaceProvider(
+            model=settings.model_name, api_key=settings.huggingface_api_key
+        )
     log.warning("Unknown provider %r; using mock.", name)
     return MockProvider(model=settings.model_name)
 
 
-_FALLBACK_ORDER = ["omniroute", "anthropic", "openai", "mock"]
+_FALLBACK_ORDER = ["omniroute", "anthropic", "openai", "huggingface", "mock"]
 
 
 def get_provider(
