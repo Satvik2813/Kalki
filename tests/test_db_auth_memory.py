@@ -38,3 +38,11 @@ def test_get_current_user_valid_token():
     
     user_id = get_current_user(req)
     assert user_id == "user-123"
+
+def test_supabase_store_enforces_user_id():
+    from shared.contracts import MemoryRecord, MemoryScope
+    from memory.supabase_store import SupabaseMemoryStore
+    store = object.__new__(SupabaseMemoryStore)
+    record = MemoryRecord(id="1", scope=MemoryScope.SESSION, content="test", user_id=None)
+    with pytest.raises(ValueError, match="user_id is required"):
+        store.add(record)

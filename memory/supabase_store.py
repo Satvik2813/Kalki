@@ -20,7 +20,7 @@ _DDL = """
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TABLE IF NOT EXISTS kalki_memories (
     id          TEXT PRIMARY KEY,
-    user_id     TEXT,
+    user_id     UUID NOT NULL,
     scope       TEXT NOT NULL,
     content     TEXT NOT NULL,
     project     TEXT,
@@ -58,6 +58,8 @@ class SupabaseMemoryStore(MemoryStore):
 
     def add(self, record: MemoryRecord) -> MemoryRecord:
         import json
+        if not record.user_id:
+            raise ValueError("user_id is required for SupabaseMemoryStore to maintain project/user isolation.")
         if record.embedding is None:
             record.embedding = embed(record.content, self.embedding_dim)
         with self._conn.cursor() as cur:
