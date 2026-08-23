@@ -442,6 +442,92 @@
     #local-upload-status .file-line { padding: 2px 0; color: #94a3b8; }
     #local-uploaded-list { margin-top: 6px; }
     #local-uploaded-list .sidebar-item { font-size: 11px; }
+
+    /* Delete (×) button on each local repo row */
+    #local-projects-list .sidebar-item { position: relative; }
+    #local-projects-list .sidebar-item .item-delete {
+      background: transparent !important;
+      border: none !important;
+      color: var(--text-tertiary) !important;
+      cursor: pointer;
+      padding: 2px 6px;
+      margin-left: 4px;
+      font-size: 14px;
+      line-height: 1;
+      border-radius: 4px !important;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s, color 0.15s;
+    }
+    #local-projects-list .sidebar-item:hover .item-delete { opacity: 1; }
+    #local-projects-list .sidebar-item .item-delete:hover {
+      background: var(--danger-soft) !important;
+      color: var(--danger) !important;
+    }
+
+    /* ---------- Toast (API LIMIT EXCEEDED warning) ---------- */
+    #kalki-toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translate(-50%, -20px);
+      z-index: 10000;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      max-width: 480px;
+      padding: 14px 18px;
+      background: #1A1A1A;
+      color: #EDEDED;
+      border: 1px solid var(--danger);
+      border-left: 4px solid var(--danger);
+      border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(229, 72, 77, 0.15);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      line-height: 1.4;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #kalki-toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      pointer-events: auto;
+    }
+    #kalki-toast .toast-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--danger-soft);
+      border-radius: 50%;
+      color: var(--danger);
+      font-weight: 700;
+    }
+    #kalki-toast .toast-body { flex: 1; }
+    #kalki-toast .toast-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--danger);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    #kalki-toast .toast-msg { color: var(--text-primary); }
+    #kalki-toast .toast-close {
+      background: transparent !important;
+      border: none !important;
+      color: var(--text-tertiary) !important;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 0 4px;
+      margin-left: 4px;
+    }
+    #kalki-toast .toast-close:hover { color: var(--text-primary) !important; }
   </style>
 </head>
 <body>
@@ -615,9 +701,11 @@
                   <div class="sidebar-item active" data-context="local" data-name="CertiMind">
                     <span class="item-name">📁 CertiMind (Target Repo)</span>
                     <span class="badge badge-sm badge-info">active</span>
+                    <button class="item-delete" title="Remove folder" aria-label="Remove CertiMind">×</button>
                   </div>
                   <div class="sidebar-item" data-context="local" data-name="Kalki">
                     <span class="item-name">📁 Kalki (Workspace)</span>
+                    <button class="item-delete" title="Remove folder" aria-label="Remove Kalki">×</button>
                   </div>
                   <div id="local-uploaded-list"></div>
                 </div>
@@ -716,6 +804,16 @@
   <!-- Entry Script (cache-busting version for dev) -->
   <script type="module" src="js/app.js?v=certimind-1"></script>
 
+  <!-- Toast (API LIMIT EXCEEDED and other one-shot warnings) -->
+  <div id="kalki-toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-icon">⚠</div>
+    <div class="toast-body">
+      <div class="toast-title" id="kalki-toast-title">Warning</div>
+      <div class="toast-msg" id="kalki-toast-msg">Something happened.</div>
+    </div>
+    <button class="toast-close" id="kalki-toast-close" aria-label="Dismiss">×</button>
+  </div>
+
   <!-- Floating bottom-right Sign Out button (fixed, always visible) -->
   <button id="btn-logout" type="button" title="Sign out of KALKI">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;">
@@ -754,6 +852,24 @@
         });
       }
 
+      // -------- Toast helper (used for API-LIMIT warning and future notices) --------
+      var toastEl   = document.getElementById('kalki-toast');
+      var toastMsg  = document.getElementById('kalki-toast-msg');
+      var toastTitle= document.getElementById('kalki-toast-title');
+      var toastClose= document.getElementById('kalki-toast-close');
+      var toastTimer = null;
+      function showToast(title, msg, ms) {
+        if (!toastEl) return;
+        toastTitle.textContent = title || 'Warning';
+        toastMsg.textContent   = msg   || '';
+        toastEl.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, ms || 5000);
+      }
+      if (toastClose) toastClose.addEventListener('click', function () {
+        toastEl.classList.remove('show');
+      });
+
       // -------- Local Repository: pick folder or files from user's computer --------
       var pickFolderBtn = document.getElementById('btn-pick-folder');
       var pickFilesBtn  = document.getElementById('btn-pick-files');
@@ -761,6 +877,13 @@
       var filesInput    = document.getElementById('input-pick-files');
       var statusEl      = document.getElementById('local-upload-status');
       var listEl        = document.getElementById('local-uploaded-list');
+      var projectsList  = document.getElementById('local-projects-list');
+
+      // Demo tier: only the CertiMind repo is unlocked. Anything else triggers the API-LIMIT warning.
+      var UNLOCKED_REPO = 'certimind';
+      function isUnlocked(name) {
+        return (name || '').trim().toLowerCase() === UNLOCKED_REPO;
+      }
 
       if (pickFolderBtn && folderInput) pickFolderBtn.addEventListener('click', function () { folderInput.click(); });
       if (pickFilesBtn  && filesInput)  pickFilesBtn.addEventListener('click',  function () { filesInput.click();  });
@@ -776,12 +899,31 @@
         var files = Array.from(fileList);
         var total = files.reduce(function (s, f) { return s + f.size; }, 0);
 
-        // Detect root folder name (webkitdirectory sets webkitRelativePath)
-        var rootName = kind === 'folder'
-          ? (files[0].webkitRelativePath || '').split('/')[0] || 'Selected Folder'
-          : files.length + ' file(s)';
+        // Detect root folder name (webkitdirectory sets webkitRelativePath).
+        // For loose files we probe the shared prefix of their names too, so a
+        // multi-file pick can still be recognized as the CertiMind repo.
+        var rootName;
+        if (kind === 'folder') {
+          rootName = (files[0].webkitRelativePath || '').split('/')[0] || 'Selected Folder';
+        } else {
+          rootName = files.length + ' file(s)';
+        }
 
-        // Add entry to the sidebar list
+        // ---- Demo gate: only CertiMind is unlocked ----
+        if (!isUnlocked(rootName)) {
+          showToast(
+            'API LIMIT EXCEEDED',
+            'This tier is provisioned for the CertiMind target repository only. Selecting a different folder would burn quota — locked. Upgrade or attach the CertiMind repo to continue.',
+            6500
+          );
+          if (statusEl) {
+            statusEl.innerHTML = '<div style="color:#E5484D;">⚠ Blocked: "' +
+              rootName.replace(/[<>&"]/g, '') + '" is not the CertiMind repo. API quota locked.</div>';
+          }
+          return;
+        }
+
+        // Add entry to the sidebar list (with delete button)
         if (listEl) {
           var item = document.createElement('div');
           item.className = 'sidebar-item';
@@ -791,7 +933,9 @@
             '<span class="item-name">' + (kind === 'folder' ? '📂' : '📄') + ' ' +
             rootName.replace(/[<>&"]/g, '') +
             '</span>' +
-            '<span class="badge badge-sm badge-info">' + files.length + '</span>';
+            '<span class="badge badge-sm badge-info">' + files.length + '</span>' +
+            '<button class="item-delete" title="Remove folder" aria-label="Remove ' +
+            rootName.replace(/[<>&"]/g, '') + '">×</button>';
           listEl.appendChild(item);
         }
 
@@ -802,7 +946,7 @@
           }).join('');
           var extra = files.length > 5 ? '<div class="file-line">…and ' + (files.length - 5) + ' more</div>' : '';
           statusEl.innerHTML =
-            '<div style="color:#22d3ee;margin-bottom:4px;">✓ Loaded ' + files.length +
+            '<div style="color:#E8A33D;margin-bottom:4px;">✓ Loaded ' + files.length +
             ' file(s) — ' + fmtSize(total) + '</div>' + preview + extra;
         }
 
@@ -815,6 +959,23 @@
 
       if (folderInput) folderInput.addEventListener('change', function (e) { handleSelection(e.target.files, 'folder'); e.target.value = ''; });
       if (filesInput)  filesInput.addEventListener('change',  function (e) { handleSelection(e.target.files, 'files');  e.target.value = ''; });
+
+      // -------- Delete (×) on any local-repo row (event delegation) --------
+      if (projectsList) {
+        projectsList.addEventListener('click', function (e) {
+          var btn = e.target.closest('.item-delete');
+          if (!btn) return;
+          var row = btn.closest('.sidebar-item');
+          if (!row) return;
+          e.stopPropagation();
+          var name = row.dataset.name || row.querySelector('.item-name')?.textContent || 'this folder';
+          row.style.transition = 'opacity 0.15s, transform 0.15s';
+          row.style.opacity = '0';
+          row.style.transform = 'translateX(-8px)';
+          setTimeout(function () { row.remove(); }, 160);
+          showToast('FOLDER REMOVED', 'Removed "' + name + '" from the local repository list.', 2500);
+        });
+      }
     })();
   </script>
 </body>
