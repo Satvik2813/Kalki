@@ -90,7 +90,7 @@ def github_connect(req: Request, user_id: str = Depends(get_required_user)):
         raise HTTPException(500, "GitHub OAuth not configured. Set GITHUB_CLIENT_ID in environment.")
         
     host = req.headers.get("host", "localhost:8000")
-    proto = req.headers.get("x-forwarded-proto", "http" if "localhost" in host else "https")
+    proto = req.headers.get("x-forwarded-proto", "http" if "localhost" in host or "127.0.0.1" in host else "https")
     redirect_uri = f"{proto}://{host}/api/integrations/github/callback"
     
     state = _generate_user_oauth_state(user_id, _get_secret(settings))
@@ -123,7 +123,7 @@ def github_callback(req: Request, code: Optional[str] = Query(None), state: Opti
         return RedirectResponse(url="/?integration_error=invalid_github_state")
         
     host = req.headers.get("host", "localhost:8000")
-    proto = req.headers.get("x-forwarded-proto", "http" if "localhost" in host else "https")
+    proto = req.headers.get("x-forwarded-proto", "http" if "localhost" in host or "127.0.0.1" in host else "https")
     redirect_uri = f"{proto}://{host}/api/integrations/github/callback"
 
     # 1. Exchange code for GitHub Access Token

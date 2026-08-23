@@ -90,7 +90,7 @@ def google_login(req: Request):
 
     # Calculate callback URL
     host = req.headers.get("host", "localhost:8000")
-    proto = req.headers.get("x-forwarded-proto", "http" if "localhost" in host else "https")
+    proto = req.headers.get("x-forwarded-proto", "http" if "localhost" in host or "127.0.0.1" in host else "https")
     redirect_uri = f"{proto}://{host}/api/auth/google/callback"
     
     state = generate_oauth_state(_get_secret(settings))
@@ -125,7 +125,7 @@ def google_callback(req: Request, code: Optional[str] = Query(None), state: Opti
         return RedirectResponse(url="/?auth_error=invalid_or_expired_state")
         
     host = req.headers.get("host", "localhost:8000")
-    proto = req.headers.get("x-forwarded-proto", "http" if "localhost" in host else "https")
+    proto = req.headers.get("x-forwarded-proto", "http" if "localhost" in host or "127.0.0.1" in host else "https")
     redirect_uri = f"{proto}://{host}/api/auth/google/callback"
 
     # 1. Exchange code for access token
@@ -186,6 +186,136 @@ def google_callback(req: Request, code: Optional[str] = Query(None), state: Opti
     )
     
     return RedirectResponse(url=f"/?token={session_token}&login=success")
+
+
+# ── GitHub OAuth Endpoints ──────────────────────────────────────────
+
+@auth_router.get("/github/login")
+def github_login(req: Request):
+    """Initiates GitHub OAuth flow to sign in."""
+    svc = req.app.state.service
+    settings: Settings = svc.settings
+    
+    if not settings.github_client_id:
+        raise HTTPException(500, "GitHub OAuth not configured. Set GITHUB_CLIENT_ID in environment.")
+        
+    host = req.headers.get("host", "localhost:8000")
+    proto = req.headers.get("x-forwarded-proto", "http" if "localhost" in host or "127.0.0.1" in host else "https")
+    redirect_uri = f"{proto}://{host}/api/auth/github/callback"
+    
+    state = generate_oauth_state(_get_secret(settings))
+    
+    params = {
+        "client_id": settings.github_client_id,
+        "redirect_uri": redirect_uri,
+        "scope": "read:user,repo",
+        "state": state,
+    }
+    
+    auth_url = f"https://github.com/login/oauth/authorize?{urllib.parse.urlencode(params)}"
+    return RedirectResponse(url=auth_url)
+
+
+@auth_router.get("/github/callback")
+def github_callback(req: Request, code: Optional[str] = Query(None), state: Optional[str] = Query(None), error: Optional[str] = Query(None)):
+    """Handles GitHub OAuth callback, issues JWT, and stores integration."""
+    if error:
+        return RedirectResponse(url=f"/?auth_error=github_{urllib.parse.quote(error)}")
+    if not code or not state:
+        return RedirectResponse(url="/?auth_error=missing_github_code_or_state")
+        
+    svc = req.app.state.service
+    settings: Settings = svc.settings
+    secret = _get_secret(settings)
+    
+    if not verify_oauth_state(state, secret):
+        return RedirectResponse(url="/?auth_error=invalid_or_expired_state")
+        
+    host = req.headers.get("host", "localhost:8000")
+    proto = req.headers.get("x-forwarded-proto", "http" if "localhost" in host or "127.0.0.1" in host else "https")
+    redirect_uri = f"{proto}://{host}/api/auth/github/callback"
+
+    # 1. Exchange code for access token
+    token_url = "https://github.com/login/oauth/access_token"
+    token_payload = urllib.parse.urlencode({
+        "client_id": settings.github_client_id,
+        "client_secret": settings.github_client_secret,
+        "code": code,
+        "redirect_uri": redirect_uri,
+    }).encode("utf-8")
+    
+    token_req = urllib.request.Request(
+        token_url,
+        data=token_payload,
+        headers={"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"},
+        method="POST"
+    )
+    
+    try:
+        with urllib.request.urlopen(token_req, timeout=15) as resp:
+            token_data = json.loads(resp.read().decode("utf-8"))
+            access_token = token_data.get("access_token")
+            scope_str = token_data.get("scope", "")
+            scopes = [s.strip() for s in scope_str.split(",") if s.strip()]
+    except Exception as e:
+        log.error("GitHub auth token exchange failed: %s", e)
+        return RedirectResponse(url="/?auth_error=github_token_exchange_failed")
+
+    if not access_token:
+        log.error("GitHub returned no access_token: %s", token_data)
+        return RedirectResponse(url="/?auth_error=github_no_access_token")
+
+    # 2. Fetch authenticated GitHub user profile
+    user_req = urllib.request.Request(
+        "https://api.github.com/user",
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "KALKI-Agent"
+        },
+        method="GET"
+    )
+    
+    try:
+        with urllib.request.urlopen(user_req, timeout=15) as resp:
+            github_user = json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        log.error("GitHub auth user fetch failed: %s", e)
+        return RedirectResponse(url="/?auth_error=github_user_fetch_failed")
+
+    github_id = str(github_user.get("id"))
+    email = github_user.get("email", "")
+    name = github_user.get("name", "") or github_user.get("login", "GitHub Developer")
+    picture = github_user.get("avatar_url", "")
+    
+    # Deterministic KALKI user_id for GitHub sign in
+    user_id = f"github:{github_id}"
+    
+    # 3. Save the integration
+    svc.integration_store.save_integration(
+        user_id=user_id,
+        provider="github",
+        token=access_token,
+        account_id=github_id,
+        account_username=github_user.get("login", ""),
+        scopes=scopes,
+        metadata={
+            "name": name,
+            "avatar_url": picture,
+            "html_url": github_user.get("html_url", ""),
+        }
+    )
+
+    # 4. Create session JWT
+    session_token = create_session_jwt(
+        user_id=user_id,
+        email=email,
+        name=name,
+        avatar_url=picture,
+        settings=settings
+    )
+    
+    return RedirectResponse(url=f"/?token={session_token}&login=success&integration=github")
 
 
 # ── Guest & Session Endpoints ───────────────────────────────────────

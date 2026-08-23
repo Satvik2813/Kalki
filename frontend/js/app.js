@@ -88,13 +88,28 @@ class KalkiApp {
         this.authenticated = true;
         this.renderUserBadge(me.user);
         await this.refreshAllIntegrations();
+        
         // Returning from an integration OAuth → go straight to project picker.
         if (this._integrationReturn) {
           this.showView('project-view');
           this.selectSource(this._integrationReturn);
           return;
         }
+
+        if (me.user.id.startsWith('google:')) {
+          const ghStatus = await this.api.getGitHubStatus();
+          if (!ghStatus.connected) {
+            this.showView('project-view');
+            this.selectSource('github');
+            return;
+          }
+        }
+
         this.showView(this._loginSuccess ? 'project-view' : 'project-view');
+        // By default, if login=success, maybe select local or GitHub.
+        if (me.user.id.startsWith('github:')) {
+            this.selectSource('github');
+        }
         return;
       }
     }
@@ -223,20 +238,59 @@ class KalkiApp {
       const status = await this.api.getGitHubStatus();
       if (!status.connected) {
         body.innerHTML = `
-          <div class="picker-connect">
-            <p class="text-muted">Connect your GitHub account to browse repositories.</p>
+          <div class="picker-connect" style="text-align: center; padding: 2rem;">
+            <p class="text-muted" style="margin-bottom: 1rem;">Connect your GitHub account to browse repositories.</p>
             <button class="btn btn-accent" id="picker-connect-github">Connect GitHub</button>
           </div>`;
         document.getElementById('picker-connect-github')
           ?.addEventListener('click', () => { window.location.href = '/api/integrations/github/connect'; });
         return;
       }
-      const data = await this.api.getGitHubRepos().catch(e => ({ error: e.message }));
-      if (data.error) { body.innerHTML = `<div class="picker-empty text-danger">${data.error}</div>`; return; }
-      this.renderPickerList(body, (data.repos || []).map(r => ({
-        title: r.full_name, meta: r.default_branch || 'main', desc: r.description || r.language || '',
-        target: { name: r.full_name, env: 'GitHub Remote', branch: r.default_branch || 'main', type: 'github', url: r.html_url },
-      })), 'No repositories found.');
+      
+      body.innerHTML = '';
+      
+      // Fetch GitHub repos
+      const ghData = await this.api.getGitHubRepos().catch(e => ({ error: e.message }));
+      
+      const ghContainer = document.createElement('div');
+      ghContainer.innerHTML = '<h3 style="margin: 1rem 0 0.5rem 0.5rem; font-size: 0.85rem; text-transform: uppercase; color: var(--kalki-text-muted);">GitHub Repositories</h3>';
+      body.appendChild(ghContainer);
+
+      if (ghData.error) {
+          ghContainer.innerHTML += `<div class="picker-empty text-danger">${ghData.error}</div>`;
+      } else {
+          this.appendPickerList(ghContainer, (ghData.repos || []).map(r => ({
+            title: r.full_name, meta: r.default_branch || 'main', desc: r.description || r.language || '',
+            target: { name: r.full_name, env: 'GitHub Remote', branch: r.default_branch || 'main', type: 'github', url: r.html_url },
+          })), 'No repositories found.');
+      }
+
+      // Fetch Vercel projects
+      const vcStatus = await this.api.getVercelStatus();
+      const vcContainer = document.createElement('div');
+      vcContainer.innerHTML = '<h3 style="margin: 1.5rem 0 0.5rem 0.5rem; font-size: 0.85rem; text-transform: uppercase; color: var(--kalki-text-muted);">Vercel Deployments</h3>';
+      body.appendChild(vcContainer);
+
+      if (!vcStatus.connected) {
+          vcContainer.innerHTML += `
+            <div class="picker-connect" style="text-align: center; padding: 1rem; border: 1px dashed var(--kalki-border);">
+              <p class="text-muted" style="margin-bottom: 0.5rem;">Connect Vercel to see your deployments.</p>
+              <button class="btn btn-sm btn-accent" id="picker-connect-vercel-inline">Connect Vercel</button>
+            </div>`;
+          document.getElementById('picker-connect-vercel-inline')
+            ?.addEventListener('click', () => this.openVercelModal());
+      } else {
+          const vcData = await this.api.getVercelProjects().catch(e => ({ error: e.message }));
+          if (vcData.error) {
+              vcContainer.innerHTML += `<div class="picker-empty text-danger">${vcData.error}</div>`;
+          } else {
+              this.appendPickerList(vcContainer, (vcData.projects || []).map(p => ({
+                title: p.name, meta: (p.latest_deployment?.readyState || 'ready').toLowerCase(),
+                desc: p.framework || '',
+                target: { name: p.name, env: 'Vercel Cloud', branch: 'production', type: 'vercel' },
+              })), 'No Vercel projects found.');
+          }
+      }
     }
 
     else if (source === 'vercel') {
@@ -251,9 +305,10 @@ class KalkiApp {
           ?.addEventListener('click', () => this.openVercelModal());
         return;
       }
+      body.innerHTML = '';
       const data = await this.api.getVercelProjects().catch(e => ({ error: e.message }));
       if (data.error) { body.innerHTML = `<div class="picker-empty text-danger">${data.error}</div>`; return; }
-      this.renderPickerList(body, (data.projects || []).map(p => ({
+      this.appendPickerList(body, (data.projects || []).map(p => ({
         title: p.name, meta: (p.latest_deployment?.readyState || 'ready').toLowerCase(),
         desc: p.framework || '',
         target: { name: p.name, env: 'Vercel Cloud', branch: 'production', type: 'vercel' },
@@ -261,6 +316,7 @@ class KalkiApp {
     }
 
     else { // local
+      body.innerHTML = '';
       const data = await this.api.getLocalProjects().catch(() => ({ projects: [] }));
       const items = (data.projects || []).map(p => ({
         title: p.name, meta: p.current_branch || 'main', desc: p.local_path || '',
@@ -272,8 +328,38 @@ class KalkiApp {
           target: { name: 'Kalki', env: 'Local Sandbox', branch: 'main', type: 'local' },
         });
       }
-      this.renderPickerList(body, items, 'No local projects paired.');
+      this.appendPickerList(body, items, 'No local projects paired.');
     }
+  }
+
+  appendPickerList(container, items, emptyMsg) {
+    if (!items.length) { container.innerHTML += `<div class="picker-empty text-muted">${emptyMsg}</div>`; return; }
+    
+    const list = document.createElement('div');
+    list.className = 'picker-list';
+    
+    items.forEach(item => {
+      const el = document.createElement('button');
+      el.className = 'picker-item';
+      el.innerHTML = `
+        <span class="picker-item-main">
+          <span class="picker-item-title">${item.title}</span>
+          ${item.desc ? `<span class="picker-item-desc">${item.desc}</span>` : ''}
+        </span>
+        <span class="badge badge-sm badge-info">${item.meta}</span>`;
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.picker-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        this.selectedTarget = item.target;
+        const label = document.getElementById('selected-project-label');
+        if (label) label.textContent = `${item.target.type} · ${item.target.name}`;
+        const confirm = document.getElementById('btn-confirm-project');
+        if (confirm) confirm.disabled = false;
+      });
+      list.appendChild(el);
+    });
+    
+    container.appendChild(list);
   }
 
   renderPickerList(body, items, emptyMsg) {

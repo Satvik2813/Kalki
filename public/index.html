@@ -13,6 +13,436 @@
   <!-- CSS Styles -->
   <link rel="stylesheet" href="css/kalki-theme.css" />
   <link rel="stylesheet" href="css/components.css" />
+
+  <!-- ============================================================
+       WARM NEUTRAL DARK SKIN — amber accent, rounded, still hushed
+       ============================================================ -->
+  <style id="kalki-light-theme">
+    :root {
+      /* Palette */
+      --bg-app: #121212;
+      --bg-panel-light: #1A1A1A;
+      --bg-panel-shade: #202020;   /* subtle lift for nested surfaces */
+      --bg-panel-hover: #262626;
+      --border-hairline: #2C2C2C;
+      --text-primary: #EDEDED;
+      --text-secondary: #9B9B9B;
+      --text-tertiary: #6B6B6B;
+      --accent: #E8A33D;
+      --accent-hover: #F0B45C;
+      --accent-soft: rgba(232, 163, 61, 0.10);
+      --accent-soft-hover: rgba(232, 163, 61, 0.18);
+      --danger: #E5484D;
+      --danger-soft: rgba(229, 72, 77, 0.10);
+
+      /* Rounded corners — everywhere */
+      --radius-xs: 6px;
+      --radius-sm: 8px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+
+      /* Remap the app's existing tokens so components.css follows suit */
+      --bg-darker: var(--bg-app);
+      --bg-dark: var(--bg-app);
+      --bg-panel: var(--bg-panel-light);
+      --bg-panel-header: var(--bg-panel-shade);
+      --bg-glass: var(--bg-panel-light);
+      --bg-glass-hover: var(--bg-panel-hover);
+      --glass-bg: var(--bg-panel-light);
+      --glass-border: transparent;
+      --glass-blur: none;
+
+      --text-main: var(--text-primary);
+      --text-muted: var(--text-secondary);
+      --text-dark: var(--text-primary);
+
+      --accent-cyan: var(--accent);
+      --accent-blue: var(--accent);
+      --accent-magenta: var(--accent);
+      --accent-purple: var(--accent);
+      --accent-cyan-glow: transparent;
+      --accent-blue-glow: transparent;
+      --accent-purple-glow: transparent;
+
+      --status-success: var(--accent);
+      --status-warning: var(--accent);
+      --status-error: var(--danger);
+      --status-active: var(--accent);
+      --color-success: var(--accent);
+      --color-success-border: var(--accent);
+      --color-warning: var(--accent);
+      --color-warning-border: var(--accent);
+      --color-failure: var(--danger);
+      --color-failure-border: var(--danger);
+
+      --border-light: var(--border-hairline);
+      --border-subtle: transparent;   /* let background shade separate, not borders */
+      --border-main: var(--border-hairline);
+      --border-glow: none;
+      --shadow-panel: none;
+
+      --gradient-primary: var(--accent);
+      --gradient-purple: var(--accent);
+      --gradient-success: var(--accent);
+    }
+
+    html, body { background: var(--bg-app) !important; color: var(--text-primary) !important; }
+
+    /* Kill the dark grid + colored radial glow backdrop */
+    body::before { display: none !important; }
+
+    /* Text-gradient wordmarks collapse to a solid accent color */
+    .text-gradient, .brand-text-block .brand-title, .header-fallback .kalki-word {
+      background: none !important;
+      -webkit-background-clip: initial !important;
+      background-clip: initial !important;
+      -webkit-text-fill-color: currentColor !important;
+      color: var(--text-primary) !important;
+      text-shadow: none !important;
+    }
+
+    /* Panels: warm dark surface, rounded, subtle border */
+    .glass-panel {
+      background: var(--bg-panel-light) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid var(--border-hairline) !important;
+      border-radius: 14px !important;
+      box-shadow: none !important;
+    }
+    /* Nested panels (inside another panel) shed their border — separate with shade */
+    .glass-panel .glass-panel {
+      border: none !important;
+      background: var(--bg-panel-shade) !important;
+      border-radius: 10px !important;
+    }
+
+    /* Sidebar: match app background, single hairline separator */
+    .workspace-sidebar {
+      background: var(--bg-app) !important;
+      border-right: 1px solid var(--border-hairline) !important;
+      border-top: none !important;
+      border-bottom: none !important;
+      border-left: none !important;
+      border-radius: 0 !important;
+    }
+    .sidebar-brand { border-bottom: 1px solid var(--border-hairline) !important; }
+    .integration-section { border-bottom: none !important; }
+    .integration-header { background: transparent !important; }
+    .integration-header:hover { background: var(--bg-panel-shade) !important; }
+    .connect-box, .connected-box { background: transparent !important; border: none !important; }
+
+    /* Text roles */
+    .text-muted { color: var(--text-secondary) !important; }
+    .text-xs { color: var(--text-secondary); }
+    .text-accent { color: var(--accent) !important; }
+    .text-danger { color: var(--danger) !important; }
+    h1, h2, h3, h4, .font-bold { color: var(--text-primary) !important; }
+
+    /* Brand mark — flatten cyan-glow to accent */
+    .kalki-brand-mark { filter: none !important; }
+    .kalki-brand-mark rect { fill: var(--bg-panel-light) !important; stroke: var(--accent) !important; }
+    .kalki-brand-mark g line { stroke: var(--accent) !important; }
+    .kalki-brand-mark circle { fill: var(--accent) !important; stroke: var(--accent) !important; }
+    .brand-text-block .brand-subtitle { color: var(--text-tertiary) !important; }
+    .user-avatar-circle { background: var(--accent) !important; color: #fff !important; }
+    .user-badge { background: var(--bg-panel-shade) !important; border: none !important; }
+
+    /* Buttons — rounded, amber accent */
+    .btn {
+      background: var(--bg-panel-shade) !important;
+      color: var(--text-primary) !important;
+      border: 1px solid var(--border-hairline) !important;
+      box-shadow: none !important;
+      border-radius: 10px !important;
+    }
+    .btn:hover { background: var(--bg-panel-hover) !important; border-color: var(--text-tertiary) !important; transform: none !important; }
+    .btn-primary, .btn-accent {
+      background: var(--accent) !important;
+      color: #1A1A1A !important;
+      border: 1px solid var(--accent) !important;
+      filter: none !important;
+      box-shadow: none !important;
+      background-image: none !important;
+    }
+    .btn-primary:hover, .btn-accent:hover { background: var(--accent-hover) !important; border-color: var(--accent-hover) !important; filter: none !important; box-shadow: none !important; }
+    .btn-outline { background: transparent !important; color: var(--text-primary) !important; border: 1px solid var(--border-hairline) !important; }
+    .btn-link { background: transparent !important; border: none !important; color: var(--accent) !important; }
+
+    /* Inputs */
+    .input, .input-base, textarea, input[type="text"], input[type="password"], input[type="email"] {
+      background: var(--bg-panel-shade) !important;
+      color: var(--text-primary) !important;
+      border: 1px solid var(--border-hairline) !important;
+      border-radius: 10px !important;
+      box-shadow: none !important;
+    }
+    .input:focus, .input-base:focus, textarea:focus, input:focus {
+      outline: none !important;
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 0 3px var(--accent-soft) !important;
+    }
+
+    /* ---------- UNIFIED BADGES ----------
+       One accent color for every state badge.
+       Filled = active/current; outline = idle/queued/done.
+       (Danger keeps a red outline to preserve error legibility.) */
+    .badge, .badge-sm, .badge-info, .badge-active, .badge-success, .badge-warning, .badge-cyan {
+      background: transparent !important;
+      color: var(--accent) !important;
+      border: 1px solid var(--accent) !important;
+      box-shadow: none !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.06em !important;
+      font-weight: 600 !important;
+      border-radius: 999px !important;
+      padding: 3px 10px !important;
+      font-size: 10.5px !important;
+    }
+    /* "Active / current" states get the filled variant */
+    .badge-active, .status-dot.active + .badge, .badge.filled {
+      background: var(--accent) !important;
+      color: #1A1A1A !important;
+    }
+    .badge-error { background: transparent !important; color: var(--danger) !important; border-color: var(--danger) !important; }
+
+    /* Status dots — all one accent; use fill vs ring to signal state */
+    .status-dot { background: var(--text-tertiary) !important; box-shadow: none !important; }
+    .status-dot.success, .status-dot.active { background: var(--accent) !important; }
+    .status-dot.error { background: var(--danger) !important; }
+
+    /* ---------- 10-STEP RIBBON (compact, fits without scrolling) ---------- */
+    .stage-ribbon {
+      background: var(--bg-panel-light) !important;
+      border: 1px solid var(--border-hairline) !important;
+      border-radius: 12px !important;
+      padding: 8px 10px !important;
+      margin-bottom: 12px !important;
+    }
+    .stage-pipeline {
+      display: flex !important;
+      align-items: center !important;
+      gap: 2px !important;
+      flex-wrap: nowrap !important;
+      overflow: hidden !important;
+      width: 100% !important;
+    }
+    .stage-arrow {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      color: var(--text-tertiary) !important;
+      font-size: 11px !important;
+      padding: 0 !important;
+      opacity: 0.5 !important;
+      flex: 0 0 12px !important;
+    }
+    .stage-step {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      padding: 6px 8px !important;
+      background: var(--bg-panel-shade) !important;
+      border: 1px solid var(--border-hairline) !important;
+      border-radius: 6px !important;
+      color: var(--text-secondary) !important;
+      font-size: 9.5px !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.04em !important;
+      text-transform: uppercase !important;
+      white-space: nowrap !important;
+      transition: all 0.2s ease !important;
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    .stage-step .stage-icon {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 16px !important;
+      height: 16px !important;
+      border-radius: 50% !important;
+      background: var(--bg-panel-hover) !important;
+      color: var(--text-tertiary) !important;
+      font-size: 9px !important;
+      font-weight: 700 !important;
+      font-family: 'JetBrains Mono', monospace !important;
+      flex-shrink: 0 !important;
+    }
+    .stage-step.active {
+      background: var(--accent-soft) !important;
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+      box-shadow: 0 0 0 3px var(--accent-soft) !important;
+    }
+    .stage-step.active .stage-icon {
+      background: var(--accent) !important;
+      color: #1A1A1A !important;
+    }
+    .stage-step.completed {
+      background: var(--bg-panel-light) !important;
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+      opacity: 0.85 !important;
+    }
+    .stage-step.completed .stage-icon {
+      background: var(--accent) !important;
+      color: #1A1A1A !important;
+    }
+    .stage-step.failed {
+      background: var(--danger-soft) !important;
+      border-color: var(--danger) !important;
+      color: var(--danger) !important;
+    }
+    .stage-step.failed .stage-icon { background: var(--danger) !important; color: #fff !important; }
+    .stage-step.recovering {
+      background: var(--accent-soft) !important;
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+      animation: kalki-pulse 1.6s ease-in-out infinite !important;
+    }
+    .stage-step.recovering .stage-icon { background: var(--accent) !important; color: #1A1A1A !important; }
+    @keyframes kalki-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 var(--accent-soft); }
+      50%      { box-shadow: 0 0 0 6px var(--accent-soft); }
+    }
+
+    /* ---------- ROUNDED SURFACES ELSEWHERE ---------- */
+    .active-project-bar {
+      background: var(--bg-panel-shade) !important;
+      border: 1px solid var(--border-hairline) !important;
+      border-radius: 12px !important;
+    }
+    .tabs-header {
+      background: transparent !important;
+      border-bottom: 1px solid var(--border-hairline) !important;
+    }
+    .tab-btn {
+      background: transparent !important;
+      border: none !important;
+      color: var(--text-secondary) !important;
+      border-bottom: 2px solid transparent !important;
+      border-radius: 0 !important;
+      padding: 10px 14px !important;
+      font-weight: 500 !important;
+    }
+    .tab-btn.active {
+      color: var(--text-primary) !important;
+      border-bottom-color: var(--accent) !important;
+      background: transparent !important;
+    }
+    .tab-btn:hover { background: var(--bg-panel-shade) !important; }
+
+    .timeline-panel { border-right: none !important; background: var(--bg-panel-light) !important; border-radius: 14px !important; }
+    .control-tabs-panel { background: var(--bg-panel-light) !important; border-radius: 14px !important; }
+    .panel-header { background: var(--bg-panel-shade) !important; border-bottom: 1px solid var(--border-hairline) !important; border-radius: 14px 14px 0 0 !important; }
+    .timeline-event-card {
+      background: var(--bg-panel-shade) !important;
+      border: 1px solid var(--border-hairline) !important;
+      border-left: 3px solid var(--accent) !important;
+      border-radius: 10px !important;
+      margin-bottom: 8px !important;
+    }
+    .timeline-event-card:hover { background: var(--bg-panel-hover) !important; }
+
+    /* Modal */
+    .modal-backdrop { background: rgba(0, 0, 0, 0.6) !important; }
+    .modal-card { background: var(--bg-panel-light) !important; border: 1px solid var(--border-hairline) !important; border-radius: 14px !important; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important; }
+
+    /* Sidebar items */
+    .sidebar-item {
+      background: transparent !important;
+      border: none !important;
+      border-radius: 8px !important;
+      color: var(--text-primary) !important;
+    }
+    .sidebar-item:hover { background: var(--bg-panel-shade) !important; }
+    .sidebar-item.active { background: var(--accent-soft) !important; color: var(--accent) !important; }
+
+    .cli-hint { background: var(--bg-panel-shade) !important; border: none !important; border-radius: 8px !important; }
+    .cli-hint code { background: transparent !important; color: var(--text-secondary) !important; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+    /* Local upload box — soft amber tint */
+    .local-upload-box {
+      background: var(--accent-soft) !important;
+      border: 1px dashed var(--accent) !important;
+      border-radius: 12px !important;
+    }
+    .local-upload-box .upload-title { color: var(--accent) !important; }
+    .local-upload-btn { background: var(--bg-panel-shade) !important; border: 1px solid var(--border-hairline) !important; color: var(--text-primary) !important; border-radius: 8px !important; }
+    .local-upload-btn:hover { background: var(--accent-soft) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+    #local-upload-status { color: var(--text-secondary) !important; }
+    #local-upload-status .file-line { color: var(--text-secondary) !important; }
+
+    /* Integration accordions — rounded hover targets */
+    .integration-header { border-radius: 10px !important; padding: 8px 10px !important; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar-thumb { background: #D4D4D0 !important; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary) !important; }
+
+    /* --- Component-specific overrides (existing inline block below) --- */
+    /* Sidebar brand block */
+    .sidebar-brand { display: flex; flex-direction: column; gap: 10px; padding: 14px 12px; border-bottom: 1px solid rgba(148, 163, 184, 0.15); }
+    .brand-logo-row { display: flex; align-items: center; gap: 10px; }
+    .kalki-brand-mark { flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.35)); }
+    .brand-text-block { display: flex; flex-direction: column; line-height: 1.05; }
+    .brand-text-block .brand-title { font-family: 'Outfit', 'Inter', system-ui, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: 3px; background: linear-gradient(90deg, #22d3ee, #3b82f6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #22d3ee; }
+    .brand-text-block .brand-subtitle { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 4px; color: #94a3b8; margin-top: 2px; }
+    .user-badge { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(148, 163, 184, 0.15); border-radius: 6px; }
+    .user-avatar-circle { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #22d3ee, #3b82f6); color: #0d0f13; font-weight: 700; font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+    .user-name-text { font-size: 13px; color: #e5e7eb; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* HEADER: completely removed — hide any JS-mounted content and the container itself */
+    #header-target,
+    #header-target * ,
+    .header-bar,
+    .context-bar,
+    .kalki-wordmark-container,
+    .kalki-subtitle,
+    .header-fallback { display: none !important; }
+
+    /* SIGN OUT: pinned to bottom-right of the viewport */
+    #btn-logout {
+      position: fixed !important;
+      bottom: 20px;
+      left: 20px;
+      right: auto !important;
+      z-index: 9999;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      width: auto !important;
+      margin: 0 !important;
+      background: #1A1A1A !important;
+      border: 1px solid #2C2C2C !important;
+      color: #EDEDED !important;
+      border-radius: 999px !important;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+      font-family: inherit;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    #btn-logout:hover { background: #E8A33D !important; border-color: #E8A33D !important; color: #1A1A1A !important; transform: translateY(-1px); }
+
+    /* LOCAL REPO: file/folder upload UI */
+    .local-upload-box { margin-top: 10px; padding: 10px; border: 1px dashed rgba(34, 211, 238, 0.35); border-radius: 6px; background: rgba(34, 211, 238, 0.04); }
+    .local-upload-box .upload-title { font-size: 11px; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
+    .local-upload-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .local-upload-btn { flex: 1; padding: 6px 8px; background: transparent; border: 1px solid rgba(148, 163, 184, 0.3); color: #cbd5e1; border-radius: 5px; font-size: 11px; cursor: pointer; font-family: inherit; transition: background 0.15s, border-color 0.15s; }
+    .local-upload-btn:hover { background: rgba(34, 211, 238, 0.1); border-color: #22d3ee; color: #22d3ee; }
+    #local-upload-status { font-size: 10px; color: #64748b; font-family: 'JetBrains Mono', monospace; margin-top: 4px; word-break: break-all; max-height: 80px; overflow-y: auto; }
+    #local-upload-status .file-line { padding: 2px 0; color: #94a3b8; }
+    #local-uploaded-list { margin-top: 6px; }
+    #local-uploaded-list .sidebar-item { font-size: 11px; }
+  </style>
 </head>
 <body>
   
@@ -82,11 +512,31 @@
         <!-- Left Workspace Sidebar -->
         <aside class="workspace-sidebar glass-panel">
           <div class="sidebar-brand">
-            <div class="brand-title">KALKI WORKSPACE</div>
+            <div class="brand-logo-row">
+              <svg class="kalki-brand-mark" width="34" height="34" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KALKI">
+                <defs>
+                  <linearGradient id="kalkiMarkGrad" x1="8" y1="6" x2="40" y2="42" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#22d3ee"/>
+                    <stop offset="1" stop-color="#3b82f6"/>
+                  </linearGradient>
+                </defs>
+                <rect x="1.5" y="1.5" width="45" height="45" rx="11" fill="#0d0f13" stroke="url(#kalkiMarkGrad)" stroke-width="1.5"/>
+                <g stroke="url(#kalkiMarkGrad)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+                  <line x1="16" y1="12" x2="16" y2="36"/>
+                  <line x1="33" y1="12" x2="18.5" y2="24"/>
+                  <line x1="18.5" y1="24" x2="33" y2="36"/>
+                </g>
+                <circle cx="18.5" cy="24" r="2.6" fill="#22d3ee"/>
+                <circle cx="18.5" cy="24" r="5.2" stroke="#22d3ee" stroke-width="1" opacity="0.45" fill="none"/>
+              </svg>
+              <div class="brand-text-block">
+                <div class="brand-title">KALKI</div>
+                <div class="brand-subtitle">WORKSPACE</div>
+              </div>
+            </div>
             <div id="user-badge" class="user-badge">
               <span id="user-avatar" class="user-avatar-circle">DEV</span>
               <span id="user-name" class="user-name-text">Developer</span>
-              <button id="btn-logout" class="btn-icon text-muted" title="Sign Out">⎋</button>
             </div>
           </div>
 
@@ -166,7 +616,20 @@
                     <span class="item-name">📁 Kalki (Current Workspace)</span>
                     <span class="badge badge-sm badge-info">active</span>
                   </div>
+                  <div id="local-uploaded-list"></div>
                 </div>
+
+                <div class="local-upload-box">
+                  <div class="upload-title">ADD FROM YOUR COMPUTER</div>
+                  <div class="local-upload-row">
+                    <button type="button" class="local-upload-btn" id="btn-pick-folder">📂 Choose Folder</button>
+                    <button type="button" class="local-upload-btn" id="btn-pick-files">📄 Choose Files</button>
+                  </div>
+                  <input type="file" id="input-pick-folder" webkitdirectory directory multiple style="display:none" />
+                  <input type="file" id="input-pick-files" multiple style="display:none" />
+                  <div id="local-upload-status">No files selected.</div>
+                </div>
+
                 <div class="cli-hint mt-2">
                   <code>python scripts/kalki_cli.py connect .</code>
                 </div>
@@ -177,8 +640,8 @@
 
         <!-- Main Workspace Area -->
         <div class="workspace-main">
-          <!-- Header Component Target -->
-          <div id="header-target"></div>
+          <!-- Header intentionally removed; JS-mounted content here is hidden via CSS below -->
+          <div id="header-target" aria-hidden="true"></div>
 
           <!-- Active Project Context Ribbon -->
           <div id="active-project-bar" class="active-project-bar glass-panel mb-3">
@@ -249,5 +712,107 @@
 
   <!-- Entry Script -->
   <script type="module" src="js/app.js"></script>
+
+  <!-- Floating bottom-right Sign Out button (fixed, always visible) -->
+  <button id="btn-logout" type="button" title="Sign out of KALKI">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Sign Out
+  </button>
+
+  <!-- Fallback wiring: sign-out + local repository file picker (works even if the module bundle fails) -->
+  <script>
+    (function () {
+      // -------- Sign Out --------
+      var btn = document.getElementById('btn-logout');
+      if (btn) {
+        btn.addEventListener('click', function () {
+          try {
+            ['kalki_token', 'kalki_auth', 'auth_token', 'access_token', 'jwt', 'token'].forEach(function (k) {
+              try { localStorage.removeItem(k); } catch (_) {}
+              try { sessionStorage.removeItem(k); } catch (_) {}
+            });
+            document.cookie.split(';').forEach(function (c) {
+              var name = c.split('=')[0].trim();
+              if (!name) return;
+              document.cookie = name + '=; Max-Age=0; path=/';
+            });
+          } catch (_) {}
+          try {
+            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+              .catch(function () {})
+              .finally(function () { window.location.href = '/'; });
+          } catch (_) {
+            window.location.href = '/';
+          }
+        });
+      }
+
+      // -------- Local Repository: pick folder or files from user's computer --------
+      var pickFolderBtn = document.getElementById('btn-pick-folder');
+      var pickFilesBtn  = document.getElementById('btn-pick-files');
+      var folderInput   = document.getElementById('input-pick-folder');
+      var filesInput    = document.getElementById('input-pick-files');
+      var statusEl      = document.getElementById('local-upload-status');
+      var listEl        = document.getElementById('local-uploaded-list');
+
+      if (pickFolderBtn && folderInput) pickFolderBtn.addEventListener('click', function () { folderInput.click(); });
+      if (pickFilesBtn  && filesInput)  pickFilesBtn.addEventListener('click',  function () { filesInput.click();  });
+
+      function fmtSize(n) {
+        if (n < 1024) return n + ' B';
+        if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+        return (n / (1024 * 1024)).toFixed(1) + ' MB';
+      }
+
+      function handleSelection(fileList, kind) {
+        if (!fileList || !fileList.length) return;
+        var files = Array.from(fileList);
+        var total = files.reduce(function (s, f) { return s + f.size; }, 0);
+
+        // Detect root folder name (webkitdirectory sets webkitRelativePath)
+        var rootName = kind === 'folder'
+          ? (files[0].webkitRelativePath || '').split('/')[0] || 'Selected Folder'
+          : files.length + ' file(s)';
+
+        // Add entry to the sidebar list
+        if (listEl) {
+          var item = document.createElement('div');
+          item.className = 'sidebar-item';
+          item.dataset.context = 'local';
+          item.dataset.name = rootName;
+          item.innerHTML =
+            '<span class="item-name">' + (kind === 'folder' ? '📂' : '📄') + ' ' +
+            rootName.replace(/[<>&"]/g, '') +
+            '</span>' +
+            '<span class="badge badge-sm badge-info">' + files.length + '</span>';
+          listEl.appendChild(item);
+        }
+
+        // Update status
+        if (statusEl) {
+          var preview = files.slice(0, 5).map(function (f) {
+            return '<div class="file-line">• ' + (f.webkitRelativePath || f.name) + ' (' + fmtSize(f.size) + ')</div>';
+          }).join('');
+          var extra = files.length > 5 ? '<div class="file-line">…and ' + (files.length - 5) + ' more</div>' : '';
+          statusEl.innerHTML =
+            '<div style="color:#22d3ee;margin-bottom:4px;">✓ Loaded ' + files.length +
+            ' file(s) — ' + fmtSize(total) + '</div>' + preview + extra;
+        }
+
+        // Expose the selection for the app to pick up (real upload wiring lives in the module app)
+        window.__kalkiLocalUploads = (window.__kalkiLocalUploads || []).concat(files.map(function (f) {
+          return { name: f.name, path: f.webkitRelativePath || f.name, size: f.size, type: f.type, file: f };
+        }));
+        window.dispatchEvent(new CustomEvent('kalki:local-upload', { detail: { kind: kind, files: files, rootName: rootName } }));
+      }
+
+      if (folderInput) folderInput.addEventListener('change', function (e) { handleSelection(e.target.files, 'folder'); e.target.value = ''; });
+      if (filesInput)  filesInput.addEventListener('change',  function (e) { handleSelection(e.target.files, 'files');  e.target.value = ''; });
+    })();
+  </script>
 </body>
 </html>
