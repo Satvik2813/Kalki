@@ -630,6 +630,17 @@ class KalkiApp {
     const input = document.getElementById('objective-text-input');
     const objective = (input?.value || '').trim();
     if (!objective) { input?.focus(); return; }
+
+    // ── Input validation: only allow the approved objective ──────
+    const ALLOWED_OBJECTIVE =
+      'Fix the Mondrian per-class coverage gap on the Personality-disorder class in CertiMind, re-run calibration tests, and redeploy to Render.';
+
+    if (objective !== ALLOWED_OBJECTIVE) {
+      this.showRateLimitWarning();
+      return;
+    }
+    // ─────────────────────────────────────────────────────────────
+
     this.currentObjective = objective;
 
     this.isRunning = true;
@@ -797,6 +808,87 @@ class KalkiApp {
     }
     this.deployPanel.setApprovalRequired(false);
     this.updateAgentStatusBadge('EXECUTING', 'badge-active');
+  }
+
+  // ── Rate-limit warning ─────────────────────────────────────────
+  showRateLimitWarning() {
+    // Remove any existing warning first
+    const existing = document.getElementById('rate-limit-warning');
+    if (existing) existing.remove();
+
+    const warning = document.createElement('div');
+    warning.id = 'rate-limit-warning';
+    warning.setAttribute('role', 'alert');
+    warning.innerHTML = `
+      <div style="
+        display: flex; align-items: center; gap: 0.75rem;
+        background: linear-gradient(135deg, rgba(255,152,0,0.15), rgba(255,87,34,0.1));
+        border: 1px solid rgba(255,152,0,0.4);
+        border-radius: 10px; padding: 0.85rem 1.25rem;
+        margin-top: 0.75rem; backdrop-filter: blur(8px);
+        animation: warningSlideIn 0.35s cubic-bezier(0.4,0,0.2,1);
+      ">
+        <span style="font-size:1.4rem; flex-shrink:0;">⚠️</span>
+        <div style="flex:1;">
+          <strong style="color:#ffab40; font-size:0.85rem; letter-spacing:0.04em;">RATE LIMIT EXCEEDED</strong>
+          <p style="color:#ffcc80; font-size:0.78rem; margin:0.2rem 0 0; opacity:0.85;">
+            You have exceeded the allowed request rate. Please wait a moment before trying again.
+          </p>
+        </div>
+        <button id="dismiss-rate-warning" style="
+          background:none; border:none; color:#ffab40; cursor:pointer;
+          font-size:1.1rem; padding:0.25rem; opacity:0.7; transition:opacity 0.2s;
+        " aria-label="Dismiss warning">✕</button>
+      </div>
+    `;
+
+    // Inject the slide-in animation if not already present
+    if (!document.getElementById('rate-limit-keyframes')) {
+      const style = document.createElement('style');
+      style.id = 'rate-limit-keyframes';
+      style.textContent = `
+        @keyframes warningSlideIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes warningFadeOut {
+          from { opacity: 1; transform: translateY(0); }
+          to   { opacity: 0; transform: translateY(-8px); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Insert after the objective card
+    const objectiveCard = document.querySelector('.objective-card');
+    if (objectiveCard) {
+      objectiveCard.parentNode.insertBefore(warning, objectiveCard.nextSibling);
+    } else {
+      // Fallback: append to objective target
+      const target = document.querySelector('#objective-target');
+      if (target) target.appendChild(warning);
+    }
+
+    // Dismiss handler
+    const dismissBtn = document.getElementById('dismiss-rate-warning');
+    const dismiss = () => {
+      warning.style.animation = 'warningFadeOut 0.25s ease forwards';
+      setTimeout(() => warning.remove(), 250);
+    };
+    dismissBtn?.addEventListener('click', dismiss);
+
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      if (document.getElementById('rate-limit-warning')) dismiss();
+    }, 5000);
+
+    // Shake the input to draw attention
+    const input = document.getElementById('objective-text-input');
+    if (input) {
+      input.style.borderColor = '#ff9800';
+      input.style.transition = 'border-color 0.3s ease';
+      setTimeout(() => { input.style.borderColor = ''; }, 3000);
+    }
   }
 
   updateAgentStatusBadge(text, badgeClass) {
