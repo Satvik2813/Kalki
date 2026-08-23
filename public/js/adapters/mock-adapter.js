@@ -76,7 +76,23 @@ export class KalkiMockAdapter {
         }
       },
       {
+        delay: 1700,
+        event: { type: 'TASK_COMPLETED', message: 'Task 01 complete', node: 'INSPECT', data: { task_id: 't-1' } }
+      },
+      {
+        delay: 1800,
+        event: { type: 'TASK_STARTED', message: 'Task 02: Reading Mondrian split-conformal calibrator', node: 'INSPECT', data: { task_id: 't-2', tool: 'filesystem' } }
+      },
+      {
+        delay: 2100,
+        event: { type: 'TASK_COMPLETED', message: 'Task 02 complete — per-class quantile logic mapped', node: 'INSPECT', data: { task_id: 't-2' } }
+      },
+      {
         delay: 2200,
+        event: { type: 'TASK_STARTED', message: 'Task 03: Querying engineering memory for coverage-fairness incidents', node: 'INSPECT', data: { task_id: 't-3', tool: 'memory' } }
+      },
+      {
+        delay: 2400,
         event: {
           type: 'MEMORY_RETRIEVED',
           message: 'SIMILAR ENGINEERING INCIDENT FOUND in vector memory (#052)',
@@ -92,6 +108,14 @@ export class KalkiMockAdapter {
             }
           }
         }
+      },
+      {
+        delay: 2600,
+        event: { type: 'TASK_COMPLETED', message: 'Task 03 complete — retrieved INC-052 at 93% similarity', node: 'INSPECT', data: { task_id: 't-3' } }
+      },
+      {
+        delay: 2900,
+        event: { type: 'TASK_STARTED', message: 'Task 04: Running calibration evaluation', node: 'TEST', data: { task_id: 't-4', tool: 'terminal' } }
       },
       {
         delay: 3000,
@@ -128,6 +152,10 @@ export class KalkiMockAdapter {
         }
       },
       {
+        delay: 4600,
+        event: { type: 'TASK_FAILED', message: 'Task 04 failed — 2 rare-class coverage assertions', node: 'DEBUG', data: { task_id: 't-4' } }
+      },
+      {
         delay: 5200,
         event: {
           type: 'RECOVERY_STARTED',
@@ -148,6 +176,10 @@ export class KalkiMockAdapter {
           node: 'RECOVERING',
           data: { revision: 2 }
         }
+      },
+      {
+        delay: 6600,
+        event: { type: 'TASK_STARTED', message: 'Task 05: Patching Mondrian quantile clamp', node: 'CODE', data: { task_id: 't-5', tool: 'code_edit' } }
       },
       {
         delay: 6800,
@@ -177,6 +209,14 @@ export class KalkiMockAdapter {
         }
       },
       {
+        delay: 7500,
+        event: { type: 'TASK_COMPLETED', message: 'Task 05 complete — Beta-CDF inflation applied', node: 'CODE', data: { task_id: 't-5' } }
+      },
+      {
+        delay: 7700,
+        event: { type: 'TASK_STARTED', message: 'Task 06: Re-running calibration suite across 5 seeds', node: 'TEST', data: { task_id: 't-6', tool: 'terminal' } }
+      },
+      {
         delay: 7800,
         event: {
           type: 'TEST_STARTED',
@@ -193,6 +233,14 @@ export class KalkiMockAdapter {
           node: 'TEST',
           data: { total: 21, passed: 21, failed: 0 }
         }
+      },
+      {
+        delay: 8800,
+        event: { type: 'TASK_COMPLETED', message: 'Task 06 complete — coverage restored across seeds', node: 'TEST', data: { task_id: 't-6' } }
+      },
+      {
+        delay: 9200,
+        event: { type: 'TASK_STARTED', message: 'Task 07: Triggering Render deploy hook', node: 'DEPLOY', data: { task_id: 't-7', tool: 'deploy' } }
       },
       {
         delay: 9400,
@@ -213,6 +261,14 @@ export class KalkiMockAdapter {
         }
       },
       {
+        delay: 10400,
+        event: { type: 'TASK_COMPLETED', message: 'Task 07 complete — Render deployment live', node: 'DEPLOY', data: { task_id: 't-7' } }
+      },
+      {
+        delay: 10800,
+        event: { type: 'TASK_STARTED', message: 'Task 08: Verifying /predict on production', node: 'VERIFY', data: { task_id: 't-8', tool: 'verifier' } }
+      },
+      {
         delay: 11000,
         event: {
           type: 'VERIFICATION_STARTED',
@@ -229,6 +285,10 @@ export class KalkiMockAdapter {
           node: 'VERIFY',
           data: { verified: true, score: 1.0 }
         }
+      },
+      {
+        delay: 11900,
+        event: { type: 'TASK_COMPLETED', message: 'Task 08 complete — production verified', node: 'VERIFY', data: { task_id: 't-8' } }
       },
       {
         delay: 12400,

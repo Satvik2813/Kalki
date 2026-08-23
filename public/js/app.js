@@ -493,6 +493,25 @@ class KalkiApp {
         }
         break;
 
+      case 'TASK_COMPLETED':
+        if (evt.data && evt.data.task_id) {
+          this.planPanel.updateTaskStatus(evt.data.task_id, 'completed');
+        }
+        break;
+
+      case 'TASK_FAILED':
+        if (evt.data && evt.data.task_id) {
+          this.planPanel.updateTaskStatus(evt.data.task_id, 'failed');
+        }
+        break;
+
+      case 'OBJECTIVE_COMPLETED':
+        if (this.planPanel && this.planPanel.plan && this.planPanel.plan.tasks) {
+          this.planPanel.plan.tasks.forEach(t => { t.status = 'completed'; });
+          this.planPanel.render();
+        }
+        break;
+
       case 'TOOL_STARTED':
         if (evt.data && evt.data.tool) {
           this.toolPanel.setToolActive(evt.data.tool, true);
