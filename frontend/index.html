@@ -4,107 +4,170 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KALKI — Autonomous AI Software Engineer</title>
-  
+
+  <link rel="icon" type="image/svg+xml" href="assets/kalki-mark.svg" />
+
   <!-- Google Fonts: Inter, JetBrains Mono, Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- CSS Styles -->
+
   <link rel="stylesheet" href="css/kalki-theme.css" />
   <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/kalki-screens.css" />
 </head>
 <body>
-  
-  <!-- View Container -->
+
   <div id="app-container">
 
-    <!-- 1. LANDING VIEW (Optional Intro) -->
-    <section id="landing-view" class="view-section hidden">
-      <div class="landing-hero glass-panel">
-        <div class="glow-orb"></div>
-        <h1 class="text-gradient">KALKI</h1>
-        <h2>Autonomous AI Software Engineer</h2>
-        <p class="subtitle">From objective to deployment. KALKI plans, codes, tests, and deploys autonomously.</p>
-        <div class="flex-col gap-2 mt-4 flex-center">
-          <button id="btn-enter-kalki" class="btn btn-accent btn-large">Initialize KALKI</button>
-          <button id="btn-skip-landing" class="btn btn-link text-xs text-muted">Skip setup & enter workspace &rarr;</button>
+    <!-- ============================================================= -->
+    <!-- 1. LANDING                                                     -->
+    <!-- ============================================================= -->
+    <section id="landing-view" class="view-section onboarding-view active">
+      <div class="onboarding-shell">
+        <div id="landing-logo" class="landing-logo" aria-hidden="true"></div>
+
+        <span class="eyebrow">AUTONOMOUS SOFTWARE ENGINEERING</span>
+        <h1 class="landing-hero-title">Your autonomous<br><span class="text-gradient">software engineer.</span></h1>
+        <p class="landing-hero-sub">
+          Give KALKI a repository and an engineering objective. It plans, inspects the
+          codebase, writes code, runs tests, recovers from failures, and verifies the
+          result — autonomously, end to end.
+        </p>
+
+        <div class="landing-actions">
+          <button id="btn-enter-kalki" class="btn btn-accent btn-large">Enter KALKI &rarr;</button>
         </div>
+
+        <ul class="capability-strip" aria-label="KALKI engineering loop">
+          <li>Understand</li><li>Plan</li><li>Inspect</li><li>Execute</li>
+          <li>Test</li><li>Recover</li><li>Verify</li><li>Learn</li>
+        </ul>
       </div>
     </section>
 
-    <!-- 2. AUTH VIEW -->
-    <section id="auth-view" class="view-section hidden">
-      <div class="auth-card glass-panel">
-        <h2>Developer Authentication</h2>
-        <p class="text-muted mb-4">Sign in with your developer identity to access the KALKI Workspace.</p>
-        <a href="/api/auth/google/login" class="btn btn-primary w-100 mb-3 flex-center gap-2" id="btn-auth-google" style="text-decoration: none;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.761H12.545z"/></svg>
+    <!-- ============================================================= -->
+    <!-- 2. AUTH                                                        -->
+    <!-- ============================================================= -->
+    <section id="auth-view" class="view-section onboarding-view hidden">
+      <div class="onboarding-card glass-panel">
+        <div id="auth-logo" class="auth-logo" aria-hidden="true"></div>
+        <h2>Sign in to KALKI</h2>
+        <p class="text-muted mb-4">Authenticated access only. Sign in to open your engineering workspace.</p>
+
+        <a href="/api/auth/google/login" id="btn-auth-google"
+           class="btn btn-primary w-100 mb-3 flex-center gap-2" style="text-decoration:none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.761H12.545z"/></svg>
           Continue with Google
         </a>
-        <button class="btn btn-outline w-100 mb-2" id="btn-auth-guest">Continue as Guest (Local Offline)</button>
-        <button class="btn btn-link text-xs text-muted w-100 mt-2" id="btn-auth-skip">Skip for now &rarr;</button>
+
+        <div id="auth-error" class="auth-note error hidden" role="alert"></div>
+        <p class="auth-note">
+          GitHub &amp; Vercel connect as project sources after you sign in.
+        </p>
+
+        <button id="btn-back-landing" class="btn btn-link text-xs mt-4">&larr; Back</button>
       </div>
     </section>
 
-    <!-- 3. PROJECT SELECTION VIEW -->
-    <section id="project-view" class="view-section hidden">
-      <div class="project-card glass-panel">
-        <h2>Select Workspace Mode</h2>
-        <p class="text-muted mb-4">Choose your initial engineering workspace target.</p>
-        
-        <div class="project-options">
-          <div class="project-option selected" id="opt-workspace">
-            <h3>Unified Workspace</h3>
-            <p class="text-muted">GitHub + Vercel + Local Repos</p>
-          </div>
-          <div class="project-option" id="opt-github">
-            <h3>GitHub Direct</h3>
-            <p class="text-muted">Remote PR workflow</p>
-          </div>
-          <div class="project-option" id="opt-local">
-            <h3>Local Workspace</h3>
-            <p class="text-muted">Direct filesystem sandbox</p>
+    <!-- ============================================================= -->
+    <!-- 3. PROJECT SELECTION                                           -->
+    <!-- ============================================================= -->
+    <section id="project-view" class="view-section onboarding-view hidden">
+      <div class="onboarding-shell project-shell">
+        <div class="project-head">
+          <span class="eyebrow">STEP 1 — CHOOSE A PROJECT</span>
+          <h2>What should KALKI work on?</h2>
+          <p class="text-muted">Connect a source and select the repository or project you want KALKI to engineer.</p>
+        </div>
+
+        <div class="project-source-grid">
+          <!-- GitHub -->
+          <button class="project-source-card" id="src-github" data-source="github" aria-pressed="false">
+            <div class="src-top">
+              <span class="src-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+              </span>
+              <span class="src-title">GitHub</span>
+              <span id="src-github-dot" class="status-dot" title="Not connected"></span>
+            </div>
+            <p class="src-desc">Remote repositories with pull-request workflow.</p>
+            <span id="src-github-state" class="src-state">Not connected</span>
+          </button>
+
+          <!-- Vercel -->
+          <button class="project-source-card" id="src-vercel" data-source="vercel" aria-pressed="false">
+            <div class="src-top">
+              <span class="src-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 22 20H2L12 2z"/></svg>
+              </span>
+              <span class="src-title">Vercel</span>
+              <span id="src-vercel-dot" class="status-dot" title="Not connected"></span>
+            </div>
+            <p class="src-desc">Deployed projects, previews and production.</p>
+            <span id="src-vercel-state" class="src-state">Not connected</span>
+          </button>
+
+          <!-- Local -->
+          <button class="project-source-card" id="src-local" data-source="local" aria-pressed="false">
+            <div class="src-top">
+              <span class="src-icon" aria-hidden="true">💻</span>
+              <span class="src-title">Local</span>
+              <span id="src-local-dot" class="status-dot success" title="Available"></span>
+            </div>
+            <p class="src-desc">The workspace paired via the KALKI CLI.</p>
+            <span id="src-local-state" class="src-state">Available</span>
+          </button>
+        </div>
+
+        <!-- Contextual picker (populated per selected source) -->
+        <div id="project-picker" class="project-picker glass-panel">
+          <div id="project-picker-body" class="project-picker-body">
+            <div class="picker-empty text-muted">Select a source above to choose a project.</div>
           </div>
         </div>
 
-        <div class="mt-4 flex-between">
-          <button class="btn" id="btn-back-auth">Back</button>
-          <button class="btn btn-accent" id="btn-confirm-project">Enter Workspace</button>
+        <div class="project-foot">
+          <button class="btn" id="btn-back-auth">&larr; Back</button>
+          <div class="project-foot-right">
+            <span id="selected-project-label" class="text-xs text-muted">No project selected</span>
+            <button class="btn btn-accent" id="btn-confirm-project" disabled>Enter Workspace &rarr;</button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 4. MAIN WORKSPACE VIEW (Default Active) -->
-    <section id="workspace-view" class="view-section active">
+    <!-- ============================================================= -->
+    <!-- 4. WORKSPACE                                                   -->
+    <!-- ============================================================= -->
+    <section id="workspace-view" class="view-section hidden">
       <div class="workspace-layout">
-        
-        <!-- Left Workspace Sidebar -->
-        <aside class="workspace-sidebar glass-panel">
+
+        <!-- Sidebar -->
+        <aside class="workspace-sidebar" aria-label="Project sources">
           <div class="sidebar-brand">
-            <div class="brand-title">KALKI WORKSPACE</div>
+            <div id="sidebar-logo" class="sidebar-logo" aria-hidden="true"></div>
             <div id="user-badge" class="user-badge">
               <span id="user-avatar" class="user-avatar-circle">DEV</span>
               <span id="user-name" class="user-name-text">Developer</span>
-              <button id="btn-logout" class="btn-icon text-muted" title="Sign Out">⎋</button>
+              <button id="btn-logout" class="btn-icon text-muted" title="Sign out" aria-label="Sign out">⎋</button>
             </div>
           </div>
 
-          <!-- Integrations Accordion -->
           <div class="sidebar-integrations">
-            <!-- 1. GitHub Section -->
+            <!-- GitHub -->
             <div class="integration-section open" id="integ-section-github">
-              <div class="integration-header" data-toggle="github-tree">
+              <div class="integration-header" data-toggle="github-tree" role="button" tabindex="0" aria-expanded="true">
                 <div class="integ-title-row">
-                  <span class="integ-icon">📦</span>
+                  <span class="integ-icon" aria-hidden="true">📦</span>
                   <span class="integ-name">GitHub</span>
                   <span id="github-status-dot" class="status-dot"></span>
                 </div>
-                <span class="accordion-arrow">▼</span>
+                <span class="accordion-arrow" aria-hidden="true">▼</span>
               </div>
               <div class="integration-body" id="github-tree">
                 <div id="github-connect-box" class="connect-box">
-                  <p class="text-xs text-muted">Connect your GitHub account to access remote repositories.</p>
+                  <p class="text-xs text-muted">Connect GitHub to access remote repositories.</p>
                   <button id="btn-connect-github" class="btn btn-sm btn-accent w-100 mt-2">Connect GitHub</button>
                 </div>
                 <div id="github-connected-box" class="connected-box hidden">
@@ -113,25 +176,25 @@
                     <button id="btn-disconnect-github" class="btn-link text-xs text-danger">Disconnect</button>
                   </div>
                   <div id="github-repos-list" class="sidebar-item-list">
-                    <div class="text-xs text-muted p-2">Loading repositories...</div>
+                    <div class="text-xs text-muted p-2">Loading repositories…</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- 2. Vercel Section -->
+            <!-- Vercel -->
             <div class="integration-section open" id="integ-section-vercel">
-              <div class="integration-header" data-toggle="vercel-tree">
+              <div class="integration-header" data-toggle="vercel-tree" role="button" tabindex="0" aria-expanded="true">
                 <div class="integ-title-row">
-                  <span class="integ-icon">▲</span>
+                  <span class="integ-icon" aria-hidden="true">▲</span>
                   <span class="integ-name">Vercel</span>
                   <span id="vercel-status-dot" class="status-dot"></span>
                 </div>
-                <span class="accordion-arrow">▼</span>
+                <span class="accordion-arrow" aria-hidden="true">▼</span>
               </div>
               <div class="integration-body" id="vercel-tree">
                 <div id="vercel-connect-box" class="connect-box">
-                  <p class="text-xs text-muted">Connect Vercel for live deployments and previews.</p>
+                  <p class="text-xs text-muted">Connect Vercel for deployments and previews.</p>
                   <button id="btn-open-vercel-modal" class="btn btn-sm btn-accent w-100 mt-2">Connect Vercel</button>
                 </div>
                 <div id="vercel-connected-box" class="connected-box hidden">
@@ -140,30 +203,30 @@
                     <button id="btn-disconnect-vercel" class="btn-link text-xs text-danger">Disconnect</button>
                   </div>
                   <div id="vercel-projects-list" class="sidebar-item-list">
-                    <div class="text-xs text-muted p-2">Loading projects...</div>
+                    <div class="text-xs text-muted p-2">Loading projects…</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- 3. Local Repository Section -->
+            <!-- Local -->
             <div class="integration-section open" id="integ-section-local">
-              <div class="integration-header" data-toggle="local-tree">
+              <div class="integration-header" data-toggle="local-tree" role="button" tabindex="0" aria-expanded="true">
                 <div class="integ-title-row">
-                  <span class="integ-icon">💻</span>
+                  <span class="integ-icon" aria-hidden="true">💻</span>
                   <span class="integ-name">Local Repository</span>
                   <span id="local-status-dot" class="status-dot success"></span>
                 </div>
-                <span class="accordion-arrow">▼</span>
+                <span class="accordion-arrow" aria-hidden="true">▼</span>
               </div>
               <div class="integration-body" id="local-tree">
                 <div class="connected-user-bar">
-                  <span class="text-xs font-mono text-muted">CLI Protocol</span>
-                  <button id="btn-pair-local" class="btn-link text-xs">Pair Current</button>
+                  <span class="text-xs font-mono text-muted">CLI protocol</span>
+                  <button id="btn-pair-local" class="btn-link text-xs">Pair current</button>
                 </div>
                 <div id="local-projects-list" class="sidebar-item-list">
                   <div class="sidebar-item active" data-context="local" data-name="Kalki">
-                    <span class="item-name">📁 Kalki (Current Workspace)</span>
+                    <span class="item-name">📁 Kalki (current)</span>
                     <span class="badge badge-sm badge-info">active</span>
                   </div>
                 </div>
@@ -175,55 +238,36 @@
           </div>
         </aside>
 
-        <!-- Main Workspace Area -->
+        <!-- Main -->
         <div class="workspace-main">
-          <!-- Header Component Target -->
           <div id="header-target"></div>
-
-          <!-- Active Project Context Ribbon -->
-          <div id="active-project-bar" class="active-project-bar glass-panel mb-3">
-            <div class="project-indicator">
-              <span class="text-xs text-muted">TARGET CONTEXT:</span>
-              <span id="active-project-name" class="font-bold text-accent">Kalki</span>
-              <span id="active-project-badge" class="badge badge-sm badge-info">local</span>
-            </div>
-            <div class="project-stats text-xs text-muted">
-              <span>Environment: <strong id="active-env-label">Local Sandbox</strong></span>
-              <span class="ml-3">Branch: <strong id="active-branch-name">main</strong></span>
-            </div>
-          </div>
-
-          <!-- Objective Input Component Target -->
           <div id="objective-target"></div>
-
-          <!-- Stage Pipeline Ribbon Component Target -->
           <div id="stage-target"></div>
 
-          <!-- Main Workspace (Split View) -->
           <main class="workspace-grid">
-            <!-- Left HERO: Live Execution Timeline -->
-            <section id="timeline-target" class="timeline-panel glass-panel"></section>
+            <section id="timeline-target" class="timeline-panel" aria-label="Live execution timeline"></section>
 
-            <!-- Right Work Area: Tabbed Control Center -->
-            <section class="control-tabs-panel glass-panel">
-              <nav class="tabs-header">
-                <button class="tab-btn active" data-tab="tab-plan">PLAN</button>
-                <button class="tab-btn" data-tab="tab-tools">TOOLS</button>
-                <button class="tab-btn" data-tab="tab-memory">MEMORY</button>
-                <button class="tab-btn" data-tab="tab-recovery">RECOVERY</button>
-                <button class="tab-btn" data-tab="tab-code">CODE DIFF</button>
-                <button class="tab-btn" data-tab="tab-tests">TESTS</button>
-                <button class="tab-btn" data-tab="tab-deploy">DEPLOYMENT</button>
+            <section class="control-tabs-panel" aria-label="Control center">
+              <nav class="tabs-header" role="tablist" aria-label="Workspace panels">
+                <button class="tab-btn active" data-tab="tab-plan" role="tab" aria-selected="true">PLAN</button>
+                <button class="tab-btn" data-tab="tab-tools" role="tab" aria-selected="false">TOOLS</button>
+                <button class="tab-btn" data-tab="tab-memory" role="tab" aria-selected="false">MEMORY</button>
+                <button class="tab-btn" data-tab="tab-recovery" role="tab" aria-selected="false">RECOVERY</button>
+                <button class="tab-btn" data-tab="tab-code" role="tab" aria-selected="false">CODE DIFF</button>
+                <button class="tab-btn" data-tab="tab-tests" role="tab" aria-selected="false">TESTS</button>
+                <button class="tab-btn" data-tab="tab-deploy" role="tab" aria-selected="false">DEPLOY</button>
+                <button class="tab-btn" data-tab="tab-result" role="tab" aria-selected="false">RESULT</button>
               </nav>
 
               <div class="tab-content-area">
-                <div id="tab-plan" class="tab-pane active"></div>
-                <div id="tab-tools" class="tab-pane"></div>
-                <div id="tab-memory" class="tab-pane"></div>
-                <div id="tab-recovery" class="tab-pane"></div>
-                <div id="tab-code" class="tab-pane"></div>
-                <div id="tab-tests" class="tab-pane"></div>
-                <div id="tab-deploy" class="tab-pane"></div>
+                <div id="tab-plan" class="tab-pane active" role="tabpanel"></div>
+                <div id="tab-tools" class="tab-pane" role="tabpanel"></div>
+                <div id="tab-memory" class="tab-pane" role="tabpanel"></div>
+                <div id="tab-recovery" class="tab-pane" role="tabpanel"></div>
+                <div id="tab-code" class="tab-pane" role="tabpanel"></div>
+                <div id="tab-tests" class="tab-pane" role="tabpanel"></div>
+                <div id="tab-deploy" class="tab-pane" role="tabpanel"></div>
+                <div id="tab-result" class="tab-pane" role="tabpanel"></div>
               </div>
             </section>
           </main>
@@ -232,22 +276,21 @@
     </section>
 
     <!-- Connect Vercel Modal -->
-    <div id="vercel-token-modal" class="modal-backdrop hidden">
+    <div id="vercel-token-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="vercel-modal-title">
       <div class="modal-card glass-panel">
-        <h3>Connect Vercel Integration</h3>
-        <p class="text-xs text-muted mb-3">Enter your personal Vercel Access Token. Tokens are encrypted at rest with AES and never shared between users.</p>
-        <input type="password" id="vercel-token-input" class="input w-100 mb-3" placeholder="vcp_..." />
-        <div id="vercel-modal-error" class="text-xs text-danger mb-2 hidden"></div>
+        <h3 id="vercel-modal-title">Connect Vercel</h3>
+        <p class="text-xs text-muted mb-3">Enter a personal Vercel access token. Tokens are encrypted at rest and never shared between users.</p>
+        <input type="password" id="vercel-token-input" class="input w-100 mb-3" placeholder="vcp_…" aria-label="Vercel access token" />
+        <div id="vercel-modal-error" class="text-xs text-danger mb-2 hidden" role="alert"></div>
         <div class="flex-between">
-          <button class="btn" id="btn-close-vercel-modal">Skip / Cancel</button>
-          <button class="btn btn-accent" id="btn-submit-vercel-token">Connect Account</button>
+          <button class="btn" id="btn-close-vercel-modal">Cancel</button>
+          <button class="btn btn-accent" id="btn-submit-vercel-token">Connect account</button>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- Entry Script -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

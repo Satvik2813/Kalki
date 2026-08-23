@@ -1,6 +1,17 @@
 /**
- * KALKI — Bounded Failure Recovery Panel Component
+ * KALKI — Bounded Failure Recovery Panel
+ * Renders the recovery pipeline from RECOVERY_STARTED event data. The stages are
+ * KALKI's real recovery model (detect → diagnose → replan → retry → verify); the
+ * specifics (failure class, strategy, action) come from the event.
  */
+
+const STAGES = [
+  { key: 'detect',   label: 'Failure detected',   icon: '×', field: 'failure' },
+  { key: 'diagnose', label: 'Diagnosing root cause', icon: '!', field: 'diagnosis' },
+  { key: 'replan',   label: 'Dynamic replanning',  icon: '↻', field: 'strategy' },
+  { key: 'retry',    label: 'Alternative action',  icon: '⚙', field: 'action' },
+  { key: 'verify',   label: 'Re-verify',           icon: '✓', field: 'verify' },
+];
 
 export class RecoveryPanel {
   constructor(container) {
@@ -9,87 +20,57 @@ export class RecoveryPanel {
     this.render();
   }
 
-  setRecovery(data) {
-    this.recoveryState = data;
-    this.render();
-  }
+  setRecovery(data) { this.recoveryState = data; this.render(); }
+  reset() { this.recoveryState = null; this.render(); }
 
   render() {
-    if (!this.recoveryState) {
+    const r = this.recoveryState;
+    if (!r) {
       this.container.innerHTML = `
-        <div style="text-align: center; color: var(--text-muted); padding: 40px 0;">
-          <div style="font-size: 28px; margin-bottom: 8px;">🛡️</div>
-          <div class="font-mono" style="font-weight: 600;">BOUNDED FAILURE RECOVERY ENGINE</div>
-          <div style="font-size: 11px; margin-top: 4px;">Monitors tool execution & automates failure diagnosis and replanning</div>
-        </div>
-      `;
+        <div class="panel-empty">
+          <div class="panel-empty-icon">🛡️</div>
+          <div class="font-mono panel-empty-title">FAILURE RECOVERY</div>
+          <div class="panel-empty-sub">When a step fails, KALKI diagnoses it, replans, and retries — shown here.</div>
+        </div>`;
       return;
     }
 
-    const r = this.recoveryState;
+    const failureClass = r.failure_class || r.failureClass || 'RUNTIME_ERROR';
+    const detail = {
+      failure: r.failure || r.error || `Categorized as ${failureClass}`,
+      diagnosis: r.diagnosis || `${failureClass} → ${r.root_cause || 'analyzing failure signature'}`,
+      strategy: r.strategy || 'REPLAN',
+      action: r.action || 'Applying alternative approach',
+      verify: r.verify || 'Re-running verification after fix',
+    };
+    const activeStage = r.recovery_stage ? String(r.recovery_stage).toLowerCase() : 'diagnose';
+    const activeIdx = STAGES.findIndex(s => activeStage.includes(s.key)) ;
 
-    const html = `
-      <div style="display: flex; flex-direction: column; gap: 14px;">
-        <div class="recovery-container">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="badge badge-failure">× TOOL FAILURE DETECTED</span>
-              <span class="font-mono" style="font-size: 11px; color: var(--text-secondary);">Failure Class: LOGIC_ERROR</span>
-            </div>
-            <span class="badge badge-warning">AUTOMATED RECOVERY ACTIVE</span>
-          </div>
-
-          <!-- Stepper Chain -->
-          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
-            <div class="recovery-step" style="border-left: 3px solid var(--color-failure);">
-              <span style="color: var(--color-failure); font-weight: 700;">×</span>
-              <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--text-primary);">01 TOOL FAILURE</div>
-                <div style="color: var(--text-muted); font-size: 11px;">pytest tests/test_auth.py failed (2 assertions failed)</div>
-              </div>
-              <span class="badge badge-failure">DETECTED</span>
-            </div>
-
-            <div class="recovery-step" style="border-left: 3px solid var(--accent-cyan);">
-              <span style="color: var(--accent-cyan); font-weight: 700;">!</span>
-              <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--text-primary);">02 DIAGNOSING ROOT CAUSE</div>
-                <div style="color: var(--text-muted); font-size: 11px;">Categorized as LOGIC_ERROR → Expiration clock-skew mismatch</div>
-              </div>
-              <span class="badge badge-cyan">DIAGNOSED</span>
-            </div>
-
-            <div class="recovery-step" style="border-left: 3px solid var(--color-warning);">
-              <span style="color: var(--color-warning); font-weight: 700;">↻</span>
-              <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--text-primary);">03 DYNAMIC REPLANNING</div>
-                <div style="color: var(--text-muted); font-size: 11px;">Created Plan Revision 2 incorporating Memory INC-037 resolution</div>
-              </div>
-              <span class="badge badge-warning">REPLANNED</span>
-            </div>
-
-            <div class="recovery-step" style="border-left: 3px solid var(--accent-blue);">
-              <span style="color: var(--accent-blue); font-weight: 700;">⚙</span>
-              <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--text-primary);">04 ALTERNATIVE ACTION EXECUTED</div>
-                <div style="color: var(--text-muted); font-size: 11px;">Applied 60s leeway tolerance patch to middleware.py</div>
-              </div>
-              <span class="badge badge-active">EXECUTED</span>
-            </div>
-
-            <div class="recovery-step" style="border-left: 3px solid var(--color-success); background: var(--color-success-bg);">
-              <span style="color: var(--color-success); font-weight: 700;">✓</span>
-              <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--color-success);">05 RECOVERY SUCCESSFUL</div>
-                <div style="color: var(--color-success); font-size: 11px;">All 16 unit & integration tests passed clean!</div>
-              </div>
-              <span class="badge badge-success">VERIFIED</span>
-            </div>
-          </div>
+    this.container.innerHTML = `
+      <div class="recovery-container">
+        <div class="flex-between" style="margin-bottom:4px;">
+          <span class="badge badge-failure">× ${failureClass}</span>
+          <span class="badge badge-warning">AUTOMATED RECOVERY</span>
         </div>
-      </div>
-    `;
-
-    this.container.innerHTML = html;
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${STAGES.map((s, i) => {
+            const done = activeIdx >= 0 && i < activeIdx;
+            const active = i === activeIdx;
+            const border = done ? 'var(--color-success)' : active ? 'var(--accent-cyan)' : 'var(--border-subtle)';
+            const badge = done ? '<span class="badge badge-success">DONE</span>'
+              : active ? '<span class="badge badge-active">ACTIVE</span>'
+              : '<span class="badge" style="color:var(--text-muted);">PENDING</span>';
+            return `
+              <div class="recovery-step" style="border-left:3px solid ${border};">
+                <span style="color:${border};font-weight:700;">${s.icon}</span>
+                <div style="flex:1;">
+                  <div style="font-weight:600;color:var(--text-primary);">${String(i + 1).padStart(2,'0')} ${s.label}</div>
+                  <div style="color:var(--text-muted);font-size:11px;">${detail[s.field]}</div>
+                </div>
+                ${badge}
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
   }
 }

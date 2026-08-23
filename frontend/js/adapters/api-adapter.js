@@ -201,6 +201,14 @@ export class KalkiAPIAdapter {
     return await res.json();
   }
 
+  async getResult(runId) {
+    const res = await fetch(`${this.baseUrl}/api/tasks/${runId}/result`, {
+      headers: this._headers(),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch result`);
+    return await res.json();
+  }
+
   async approveTask(runId, tools = []) {
     const res = await fetch(`${this.baseUrl}/api/tasks/${runId}/approve`, {
       method: 'POST',

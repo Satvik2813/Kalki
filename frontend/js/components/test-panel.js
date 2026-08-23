@@ -1,5 +1,6 @@
 /**
- * KALKI — Testing Status & Verification Panel Component
+ * KALKI — Test & Verification Panel
+ * Data-driven from TEST_STARTED / TEST_FAILED / TEST_PASSED events. No fake metrics.
  */
 
 export class TestPanel {
@@ -9,69 +10,61 @@ export class TestPanel {
     this.render();
   }
 
-  setTestState(data) {
-    this.testState = data;
-    this.render();
-  }
+  setTestState(data) { this.testState = data; this.render(); }
+  reset() { this.testState = null; this.render(); }
 
   render() {
-    if (!this.testState) {
+    const ts = this.testState;
+    if (!ts) {
       this.container.innerHTML = `
-        <div style="text-align: center; color: var(--text-muted); padding: 40px 0;">
-          <div style="font-size: 28px; margin-bottom: 8px;">🧪</div>
-          <div class="font-mono" style="font-weight: 600;">AUTOMATED TEST SUITE & VERIFICATION</div>
-          <div style="font-size: 11px; margin-top: 4px;">Unit, integration, and build check results will render here</div>
-        </div>
-      `;
+        <div class="panel-empty">
+          <div class="panel-empty-icon">🧪</div>
+          <div class="font-mono panel-empty-title">TEST SUITE</div>
+          <div class="panel-empty-sub">Unit and integration results render here as KALKI runs tests.</div>
+        </div>`;
       return;
     }
 
-    const ts = this.testState;
-    const isPassing = ts.failed === 0;
+    const phase = ts.phase || (ts.failed > 0 ? 'TEST_FAILED' : 'TEST_PASSED');
+    const running = phase === 'TEST_STARTED';
+    const passed = ts.passed ?? ts.passed_count;
+    const failed = ts.failed ?? ts.failed_count;
+    const derivedTotal = (passed ?? 0) + (failed ?? 0);
+    const total = ts.total ?? ts.total_tests ?? (derivedTotal > 0 ? derivedTotal : undefined);
+    const isPassing = phase === 'TEST_PASSED' || (failed === 0 && !running);
 
-    const html = `
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-        <!-- Test Status Overview -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
-          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); text-align: center;">
-            <div class="font-mono" style="font-size: 10px; color: var(--text-muted);">UNIT TESTS</div>
-            <div class="font-mono" style="font-size: 18px; font-weight: 700; color: ${isPassing ? 'var(--color-success)' : 'var(--color-failure)'}; margin: 4px 0;">
-              ${ts.passed || 16} / ${ts.total || 16}
-            </div>
-            <span class="badge ${isPassing ? 'badge-success' : 'badge-failure'}">${isPassing ? '✓ PASS' : '× FAIL'}</span>
-          </div>
+    let statusBadge, statusText, color;
+    if (running) { statusBadge = 'badge-active'; statusText = '● RUNNING'; color = 'var(--accent-cyan)'; }
+    else if (isPassing) { statusBadge = 'badge-success'; statusText = '✓ PASSED'; color = 'var(--color-success)'; }
+    else { statusBadge = 'badge-failure'; statusText = '× FAILED'; color = 'var(--color-failure)'; }
 
-          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); text-align: center;">
-            <div class="font-mono" style="font-size: 10px; color: var(--text-muted);">INTEGRATION</div>
-            <div class="font-mono" style="font-size: 18px; font-weight: 700; color: var(--color-success); margin: 4px 0;">4 / 4</div>
-            <span class="badge badge-success">✓ PASS</span>
-          </div>
+    const countStr = (total != null)
+      ? `${passed ?? 0} / ${total}`
+      : running ? '…' : (passed != null ? String(passed) : '—');
 
-          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); text-align: center;">
-            <div class="font-mono" style="font-size: 10px; color: var(--text-muted);">BUILD</div>
-            <div class="font-mono" style="font-size: 18px; font-weight: 700; color: var(--color-success); margin: 4px 0;">CLEAN</div>
-            <span class="badge badge-success">✓ PASS</span>
-          </div>
+    const failures = Array.isArray(ts.failures) ? ts.failures : [];
+    const suite = ts.suite || ts.suite_name || 'test suite';
 
-          <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); text-align: center;">
-            <div class="font-mono" style="font-size: 10px; color: var(--text-muted);">LINT / TYPES</div>
-            <div class="font-mono" style="font-size: 18px; font-weight: 700; color: var(--color-success); margin: 4px 0;">0 ERRORS</div>
-            <span class="badge badge-success">✓ PASS</span>
+    this.container.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="test-summary">
+          <div class="test-summary-main">
+            <div class="text-muted font-mono" style="font-size:10px;">${suite.toUpperCase()}</div>
+            <div class="test-count" style="color:${color};">${countStr}</div>
+            <div class="text-muted font-mono" style="font-size:11px;">tests passing</div>
           </div>
+          <span class="badge ${statusBadge}">${statusText}</span>
         </div>
 
-        <!-- Terminal Logs -->
-        <div style="background: var(--bg-darkest); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; font-family: var(--font-mono); font-size: 11px;">
-          <div style="color: var(--text-muted); margin-bottom: 8px;">$ pytest tests/test_auth.py -v</div>
-          <div style="color: var(--color-success);">test_auth_login ................................................ [ 25%] PASSED</div>
-          <div style="color: var(--color-success);">test_token_signature ........................................... [ 50%] PASSED</div>
-          <div style="color: var(--color-success);">test_token_expiration_skew ...................................... [ 75%] PASSED</div>
-          <div style="color: var(--color-success);">test_callback_refresh .......................................... [100%] PASSED</div>
-          <div style="color: var(--color-success); font-weight: 700; margin-top: 8px;">================ 16 passed in 0.42s ================</div>
-        </div>
-      </div>
-    `;
+        ${failed > 0 ? `<div class="test-fail-count font-mono">${failed} failing</div>` : ''}
 
-    this.container.innerHTML = html;
+        ${failures.length ? `
+          <div class="test-failures">
+            <div class="font-mono text-muted" style="font-size:10px;margin-bottom:6px;">FAILURE DETAIL</div>
+            ${failures.map(f => `<div class="test-failure-line">× ${typeof f === 'string' ? f : (f.message || JSON.stringify(f))}</div>`).join('')}
+          </div>` : ''}
+
+        ${running ? `<div class="test-running font-mono text-muted">Executing ${suite}…</div>` : ''}
+      </div>`;
   }
 }

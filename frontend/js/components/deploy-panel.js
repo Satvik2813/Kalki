@@ -1,5 +1,7 @@
 /**
- * KALKI — Deployment & Verification Matrix Component
+ * KALKI — Deployment & Approval Panel
+ * Fully event-driven: renders only what DEPLOY_* / APPROVAL events actually report.
+ * No fabricated metrics.
  */
 
 export class DeployPanel {
@@ -8,86 +10,73 @@ export class DeployPanel {
     this.options = options;
     this.deployState = null;
     this.approvalRequired = false;
+    this.approvalTools = [];
     this.render();
   }
 
-  setDeployState(data) {
-    this.deployState = data;
-    this.render();
-  }
-
-  setApprovalRequired(required, tools = []) {
-    this.approvalRequired = required;
-    this.approvalTools = tools;
-    this.render();
-  }
+  setDeployState(data) { this.deployState = data; this.render(); }
+  setApprovalRequired(required, tools = []) { this.approvalRequired = required; this.approvalTools = tools; this.render(); }
+  reset() { this.deployState = null; this.approvalRequired = false; this.approvalTools = []; this.render(); }
 
   render() {
-    const html = `
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-        ${this.approvalRequired ? `
-          <div class="approval-banner">
-            <div>
-              <div class="font-mono" style="font-size: 13px; font-weight: 700; color: var(--color-warning);">🔐 HUMAN APPROVAL REQUIRED FOR PRODUCTION ACTION</div>
-              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
-                KALKI requests approval to run gated tool: <span class="font-mono" style="color: var(--accent-cyan); font-weight: 700;">${(this.approvalTools || ['deploy_production']).join(', ')}</span>
-              </div>
-            </div>
-            <div class="approval-actions">
-              <button id="approve-action-btn" class="btn-approve">APPROVE & RESUME →</button>
-            </div>
-          </div>
-        ` : ''}
+    const d = this.deployState;
+    const live = d && (d.status === 'live' || d.phase === 'DEPLOY_COMPLETED');
+    const url = d?.url || d?.environment;
 
-        <!-- Deployment Matrix Card -->
-        <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span>🚀</span>
-              <span class="font-mono" style="font-weight: 700; color: var(--text-primary);">DEPLOYMENT MATRIX</span>
-            </div>
-            <span class="badge badge-success">● VERIFIED LIVE</span>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-family: var(--font-mono); font-size: 12px;">
-            <div style="background: var(--bg-dark); padding: 10px; border-radius: var(--radius-xs); border: 1px solid var(--border-subtle);">
-              <span style="color: var(--text-muted);">ENVIRONMENT:</span>
-              <span style="color: var(--accent-cyan); font-weight: 700; margin-left: 6px;">PREVIEW / STAGING</span>
-            </div>
-
-            <div style="background: var(--bg-dark); padding: 10px; border-radius: var(--radius-xs); border: 1px solid var(--border-subtle);">
-              <span style="color: var(--text-muted);">BUILD PIPELINE:</span>
-              <span style="color: var(--color-success); font-weight: 700; margin-left: 6px;">✓ SUCCESSFUL</span>
-            </div>
-
-            <div style="background: var(--bg-dark); padding: 10px; border-radius: var(--radius-xs); border: 1px solid var(--border-subtle);">
-              <span style="color: var(--text-muted);">HEALTH CHECK:</span>
-              <span style="color: var(--color-success); font-weight: 700; margin-left: 6px;">✓ 200 OK (14ms)</span>
-            </div>
-
-            <div style="background: var(--bg-dark); padding: 10px; border-radius: var(--radius-xs); border: 1px solid var(--border-subtle);">
-              <span style="color: var(--text-muted);">SMOKE TESTS:</span>
-              <span style="color: var(--color-success); font-weight: 700; margin-left: 6px;">✓ 4 / 4 PASSED</span>
-            </div>
-          </div>
-
-          <div style="margin-top: 14px; background: rgba(63, 185, 80, 0.08); border: 1px solid var(--color-success-border); padding: 12px; border-radius: var(--radius-xs); display: flex; align-items: center; justify-content: space-between;">
-            <div class="font-mono" style="font-size: 12px; color: var(--color-success);">
-              Deployment URL: <a href="https://kalki-auth-fix.vercel.app" target="_blank" style="color: var(--accent-cyan); text-decoration: none; font-weight: 600;">https://kalki-auth-fix.vercel.app</a>
-            </div>
-            <span class="badge badge-success">VERIFIED</span>
+    const approval = this.approvalRequired ? `
+      <div class="approval-banner">
+        <div>
+          <div class="font-mono" style="font-size:13px;font-weight:700;color:var(--color-warning);">🔐 Human approval required</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">
+            KALKI requests approval to run gated tool:
+            <span class="font-mono" style="color:var(--accent-cyan);font-weight:700;">${(this.approvalTools || ['deploy_production']).join(', ')}</span>
           </div>
         </div>
-      </div>
-    `;
+        <div class="approval-actions">
+          <button id="approve-action-btn" class="btn-approve">Approve &amp; resume →</button>
+        </div>
+      </div>` : '';
 
-    this.container.innerHTML = html;
+    let matrix;
+    if (!d) {
+      matrix = `
+        <div class="panel-empty">
+          <div class="panel-empty-icon">🚀</div>
+          <div class="font-mono panel-empty-title">DEPLOYMENT</div>
+          <div class="panel-empty-sub">Deployment status and preview URLs appear here when KALKI ships a build.</div>
+        </div>`;
+    } else {
+      const rows = [
+        ['Environment', d.target || d.environment_name || (d.phase === 'DEPLOY_STARTED' ? 'provisioning…' : 'preview')],
+        ['Status', d.phase === 'DEPLOY_STARTED' ? 'deploying…' : (d.status || 'complete')],
+      ].filter(([, v]) => v);
+
+      matrix = `
+        <div class="deploy-card">
+          <div class="deploy-card-head">
+            <div class="flex-center gap-2"><span>🚀</span><span class="font-mono" style="font-weight:700;">DEPLOYMENT</span></div>
+            <span class="badge ${live ? 'badge-success' : 'badge-warning'}">${live ? '● LIVE' : '◐ IN PROGRESS'}</span>
+          </div>
+          <div class="deploy-grid">
+            ${rows.map(([k, v]) => `
+              <div class="deploy-cell">
+                <span class="text-muted">${k.toUpperCase()}</span>
+                <span class="deploy-cell-val">${v}</span>
+              </div>`).join('')}
+          </div>
+          ${url ? `
+            <div class="deploy-url">
+              <span class="font-mono text-muted">URL</span>
+              <a href="${url.startsWith('http') ? url : 'https://' + url}" target="_blank" rel="noopener">${url}</a>
+            </div>` : ''}
+        </div>`;
+    }
+
+    this.container.innerHTML = `<div style="display:flex;flex-direction:column;gap:16px;">${approval}${matrix}</div>`;
 
     const approveBtn = document.getElementById('approve-action-btn');
     if (approveBtn && this.options.onApprove) {
-      approveBtn.addEventListener('click', () => {
-        this.options.onApprove(this.approvalTools);
-      });
+      approveBtn.addEventListener('click', () => this.options.onApprove(this.approvalTools));
     }
   }
 }

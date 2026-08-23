@@ -52,6 +52,8 @@ class Settings:
     anthropic_api_key: str = ""
     openai_api_key: str = ""
     gemini_api_key: str = ""
+    mistral_api_key: str = ""
+    mistral_agent_id: str = ""
 
     # Memory
     memory_backend: str = "local"
@@ -100,6 +102,8 @@ class Settings:
             anthropic_api_key=_get("ANTHROPIC_API_KEY", ""),
             openai_api_key=_get("OPENAI_API_KEY", ""),
             gemini_api_key=_get("GEMINI_API_KEY", ""),
+            mistral_api_key=_get("MISTRAL_API_KEY", ""),
+            mistral_agent_id=_get("MISTRAL_AGENT_ID", ""),
             memory_backend=_get("KALKI_MEMORY_BACKEND", "local").lower(),
             local_db_path=_get("KALKI_LOCAL_DB_PATH", "kalki_local.sqlite3"),
             supabase_url=_get("SUPABASE_URL", ""),

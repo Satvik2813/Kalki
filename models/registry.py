@@ -3,7 +3,7 @@
 Resolution order for a requested provider:
   1. Build the requested provider.
   2. If it is not ``available()`` (missing creds / unreachable), fall back
-     through: omniroute -> anthropic -> openai -> mock.
+     through: omniroute -> anthropic -> openai -> gemini -> mistral -> huggingface -> mock.
 The mock provider is always available, so ``get_provider`` never fails.
 """
 from __future__ import annotations
@@ -13,10 +13,15 @@ from typing import Optional
 
 from config.settings import Settings, get_settings
 from models.base import ModelProvider
-from models.direct import DirectAnthropicProvider, DirectOpenAIProvider
+from models.direct import (
+    DirectAnthropicProvider,
+    DirectGeminiProvider,
+    DirectMistralProvider,
+    DirectOpenAIProvider,
+)
+from models.huggingface import HuggingFaceProvider
 from models.mock import MockProvider
 from models.omniroute import OmniRouteProvider
-from models.huggingface import HuggingFaceProvider
 
 log = logging.getLogger("kalki.models")
 
@@ -40,6 +45,16 @@ def build_provider(name: str, settings: Settings) -> ModelProvider:
         return DirectOpenAIProvider(
             model=settings.model_name, api_key=settings.openai_api_key
         )
+    if name == "gemini":
+        return DirectGeminiProvider(
+            model=settings.model_name, api_key=settings.gemini_api_key
+        )
+    if name == "mistral":
+        return DirectMistralProvider(
+            model=settings.model_name,
+            api_key=settings.mistral_api_key,
+            agent_id=settings.mistral_agent_id,
+        )
     if name == "huggingface":
         return HuggingFaceProvider(
             model=settings.model_name, api_key=settings.huggingface_api_key
@@ -48,7 +63,15 @@ def build_provider(name: str, settings: Settings) -> ModelProvider:
     return MockProvider(model=settings.model_name)
 
 
-_FALLBACK_ORDER = ["omniroute", "anthropic", "openai", "huggingface", "mock"]
+_FALLBACK_ORDER = [
+    "omniroute",
+    "anthropic",
+    "openai",
+    "gemini",
+    "mistral",
+    "huggingface",
+    "mock",
+]
 
 
 def get_provider(

@@ -1,0 +1,19 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KALKI">
+  <defs>
+    <linearGradient id="kalkiMarkGrad" x1="8" y1="6" x2="40" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded engineering badge -->
+  <rect x="1.5" y="1.5" width="45" height="45" rx="11" fill="#0d0f13" stroke="url(#kalkiMarkGrad)" stroke-width="1.5"/>
+  <!-- Geometric K monogram -->
+  <g stroke="url(#kalkiMarkGrad)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <line x1="16" y1="12" x2="16" y2="36"/>
+    <line x1="33" y1="12" x2="18.5" y2="24"/>
+    <line x1="18.5" y1="24" x2="33" y2="36"/>
+  </g>
+  <!-- Autonomous decision node at the junction -->
+  <circle cx="18.5" cy="24" r="2.6" fill="#22d3ee"/>
+  <circle cx="18.5" cy="24" r="5.2" stroke="#22d3ee" stroke-width="1" opacity="0.45" fill="none"/>
+</svg>

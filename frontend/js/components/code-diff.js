@@ -1,5 +1,7 @@
 /**
- * KALKI — Professional Code Diff Viewer Component
+ * KALKI — Code Diff Viewer
+ * Renders the actual diff carried on a CODE_CHANGED event. Parses unified-diff
+ * text into +/- lines; falls back to a summary when no diff body is provided.
  */
 
 export class CodeDiffView {
@@ -9,52 +11,60 @@ export class CodeDiffView {
     this.render();
   }
 
-  setDiff(data) {
-    this.diffData = data;
-    this.render();
+  setDiff(data) { this.diffData = data; this.render(); }
+  reset() { this.diffData = null; this.render(); }
+
+  _escape(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  _renderDiffBody(diff) {
+    const lines = diff.split('\n');
+    let added = 0, removed = 0;
+    const rows = lines.map(line => {
+      let cls = '';
+      if (line.startsWith('+') && !line.startsWith('+++')) { cls = 'add'; added++; }
+      else if (line.startsWith('-') && !line.startsWith('---')) { cls = 'del'; removed++; }
+      else if (line.startsWith('@@')) cls = 'hunk';
+      return `<div class="diff-line ${cls}"><span>${this._escape(line) || '&nbsp;'}</span></div>`;
+    }).join('');
+    return { rows, added, removed };
   }
 
   render() {
-    if (!this.diffData) {
+    const d = this.diffData;
+    if (!d) {
       this.container.innerHTML = `
-        <div style="text-align: center; color: var(--text-muted); padding: 40px 0;">
-          <div style="font-size: 28px; margin-bottom: 8px;">📝</div>
-          <div class="font-mono" style="font-weight: 600;">CODE CHANGES & DIFF VIEWER</div>
-          <div style="font-size: 11px; margin-top: 4px;">Modified files and syntax-highlighted diffs will render here when KALKI edits code</div>
-        </div>
-      `;
+        <div class="panel-empty">
+          <div class="panel-empty-icon">📝</div>
+          <div class="font-mono panel-empty-title">CODE CHANGES</div>
+          <div class="panel-empty-sub">File edits and diffs render here when KALKI modifies code.</div>
+        </div>`;
       return;
     }
 
-    const d = this.diffData;
+    let body = '', added = d.added, removed = d.removed;
+    if (d.diff) {
+      const parsed = this._renderDiffBody(d.diff);
+      body = parsed.rows;
+      if (added == null) added = parsed.added;
+      if (removed == null) removed = parsed.removed;
+    }
 
-    const html = `
+    this.container.innerHTML = `
       <div class="diff-container">
         <div class="diff-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="flex-center gap-2" style="min-width:0;">
             <span>📝</span>
-            <span style="font-weight: 700; color: var(--accent-cyan);">${d.file || 'src/auth/middleware.py'}</span>
-            <span class="badge badge-success">+14</span>
-            <span class="badge badge-failure">-4</span>
+            <span class="diff-file" style="font-weight:700;color:var(--accent-cyan);">${this._escape(d.file || 'modified file')}</span>
+            ${added != null ? `<span class="badge badge-success">+${added}</span>` : ''}
+            ${removed != null ? `<span class="badge badge-failure">-${removed}</span>` : ''}
           </div>
-          <span style="color: var(--text-muted); font-size: 11px;">${d.summary || 'Added 60s clock skew tolerance to PyJWT verify context'}</span>
+          ${d.summary ? `<span class="diff-summary text-muted">${this._escape(d.summary)}</span>` : ''}
         </div>
-
         <div class="diff-body">
-          <div class="diff-line"><span class="diff-num">40</span><span>def verify_jwt_token(token: str):</span></div>
-          <div class="diff-line"><span class="diff-num">41</span><span>    """Verifies incoming JWT session token with clock skew safety."""</span></div>
-          <div class="diff-line del"><span class="diff-num">42</span><span>-   payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])</span></div>
-          <div class="diff-line add"><span class="diff-num">42</span><span>+   payload = jwt.decode(</span></div>
-          <div class="diff-line add"><span class="diff-num">43</span><span>+       token,</span></div>
-          <div class="diff-line add"><span class="diff-num">44</span><span>+       SECRET_KEY,</span></div>
-          <div class="diff-line add"><span class="diff-num">45</span><span>+       algorithms=["HS256"],</span></div>
-          <div class="diff-line add"><span class="diff-num">46</span><span>+       leeway=60  # Added 60s clock-skew tolerance per INC-037</span></div>
-          <div class="diff-line add"><span class="diff-num">47</span><span>+   )</span></div>
-          <div class="diff-line"><span class="diff-num">48</span><span>    return payload</span></div>
+          ${body || `<div class="diff-line"><span>${this._escape(d.summary || 'Change recorded (no diff body provided).')}</span></div>`}
         </div>
-      </div>
-    `;
-
-    this.container.innerHTML = html;
+      </div>`;
   }
 }

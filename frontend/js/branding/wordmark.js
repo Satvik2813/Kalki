@@ -1,68 +1,36 @@
 /**
- * KALKI — Custom Geometric Typography & Wordmark Component
- * 
- * Generates vector geometric SVG lettering for the KALKI wordmark with:
- * - Geometric lettering constructed from straight lines & sharp angles
- * - Thin sharp strokes with A-like triangular geometry
- * - Wide letter tracking
- * - Futuristic engineering precision
+ * KALKI — Brand Wordmark
+ *
+ * Inline SVG lockup: geometric "K" mark (with autonomous decision node) plus
+ * the KALKI wordmark. Rendered from the same design tokens as the app so the
+ * navbar logo, favicon (assets/kalki-mark.svg), and lockup stay consistent.
  */
 
 export function renderKalkiWordmark(container, options = {}) {
   const height = options.height || 28;
-  
+  const showText = options.showText !== false;
+
   const svgHTML = `
-    <svg class="kalki-logo-svg" height="${height}" viewBox="0 0 340 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg class="kalki-logo-svg" height="${height}" viewBox="0 0 ${showText ? 176 : 44} 44"
+         fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KALKI">
       <defs>
-        <!-- Glow Filter -->
-        <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="1.5" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-        <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#00f0ff" />
-          <stop offset="100%" stop-color="#38bdf8" />
+        <linearGradient id="kalkiWmGrad" x1="4" y1="6" x2="36" y2="38" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#22d3ee"/>
+          <stop offset="1" stop-color="#3b82f6"/>
         </linearGradient>
       </defs>
-
-      <!-- Letter K -->
-      <g class="letter-k" stroke="url(#cyanGrad)" stroke-width="2.5" stroke-linecap="square" filter="url(#cyanGlow)">
-        <line x1="10" y1="10" x2="10" y2="40" />
-        <line x1="32" y1="10" x2="10" y2="25" />
-        <line x1="10" y1="25" x2="32" y2="40" />
+      <rect x="2.5" y="2.5" width="39" height="39" rx="9.5" fill="#0d0f13"
+            stroke="url(#kalkiWmGrad)" stroke-width="1.4"/>
+      <g stroke="url(#kalkiWmGrad)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <line x1="14" y1="11" x2="14" y2="33"/>
+        <line x1="29.5" y1="11" x2="16.2" y2="22"/>
+        <line x1="16.2" y1="22" x2="29.5" y2="33"/>
       </g>
-
-      <!-- Letter A (Triangular Geometric Apex) -->
-      <g class="letter-a" stroke="url(#cyanGrad)" stroke-width="2.5" stroke-linecap="square" filter="url(#cyanGlow)">
-        <polyline points="50,40 68,10 86,40" />
-        <line x1="58" y1="28" x2="78" y2="28" />
-        <!-- Sharp Inner Triangular Notch -->
-        <polygon points="68,16 64,24 72,24" fill="#00f0ff" opacity="0.6" />
-      </g>
-
-      <!-- Letter L -->
-      <g class="letter-l" stroke="url(#cyanGrad)" stroke-width="2.5" stroke-linecap="square" filter="url(#cyanGlow)">
-        <line x1="105" y1="10" x2="105" y2="40" />
-        <line x1="105" y1="40" x2="127" y2="40" />
-      </g>
-
-      <!-- Letter K -->
-      <g class="letter-k2" stroke="url(#cyanGrad)" stroke-width="2.5" stroke-linecap="square" filter="url(#cyanGlow)">
-        <line x1="145" y1="10" x2="145" y2="40" />
-        <line x1="167" y1="10" x2="145" y2="25" />
-        <line x1="145" y1="25" x2="167" y2="40" />
-      </g>
-
-      <!-- Letter I -->
-      <g class="letter-i" stroke="url(#cyanGrad)" stroke-width="2.5" stroke-linecap="square" filter="url(#cyanGlow)">
-        <line x1="187" y1="10" x2="207" y2="10" />
-        <line x1="197" y1="10" x2="197" y2="40" />
-        <line x1="187" y1="40" x2="207" y2="40" />
-      </g>
-
-      <!-- Geometric Accent Dots & Subtitle Mark -->
-      <circle cx="225" cy="25" r="2" fill="#00f0ff" filter="url(#cyanGlow)" />
-      <text x="238" y="28" fill="#8b949e" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" letter-spacing="3">AI CORE</text>
+      <circle cx="16.2" cy="22" r="2.3" fill="#22d3ee"/>
+      ${showText ? `
+      <text x="56" y="29" font-family="Outfit, 'Segoe UI', sans-serif" font-size="22"
+            font-weight="800" letter-spacing="4" fill="#f6f8fb">KALKI</text>
+      ` : ''}
     </svg>
   `;
 

@@ -25,6 +25,7 @@ docs/AGENT_FLOW.md.
 from __future__ import annotations
 
 import logging
+import re
 from typing import Optional
 
 from agent.events import EventBus
@@ -67,6 +68,127 @@ _TOOL_EVENTS = {
     "run_tests": (EventType.TEST_STARTED, EventType.TEST_PASSED, EventType.TEST_FAILED),
     "deploy": (EventType.DEPLOY_STARTED, EventType.DEPLOY_COMPLETED, EventType.TOOL_FAILED),
 }
+
+# ── event-enrichment helpers ────────────────────────────────────
+# These only *read* real execution state and shape it onto the event ``data``
+# payload the existing frontend panels already consume. Nothing here fabricates
+# values: every field comes from a ToolResult / RecoveryDecision / plan / model
+# that genuinely exists during a live run.
+
+# Coarse UI pipeline-stage hint (matches the frontend stage-ribbon ids). Purely
+# a display aid so the ribbon advances in LIVE mode; it never drives execution.
+_UI_STAGE = {
+    "list_dir": "INSPECT",
+    "read_file": "INSPECT",
+    "run_command": "INSPECT",
+    "write_file": "CODE",
+    "run_tests": "TEST",
+    "http_check": "VERIFY",
+    "deploy": "DEPLOY",
+}
+
+
+def _ui_stage(tool: Optional[str]) -> str:
+    return _UI_STAGE.get(tool or "", "INSPECT")
+
+
+def _safe_args(args: Optional[dict], limit: int = 300) -> dict:
+    """Truncate long/opaque arg values for transport. The builtin toolbelt takes
+    paths/commands/content — never secrets — but we still cap large blobs (e.g.
+    file ``content``) so events stay small and never dump whole files."""
+    out: dict = {}
+    for k, v in (args or {}).items():
+        if isinstance(v, str) and len(v) > limit:
+            out[k] = v[:limit] + "…"
+        else:
+            out[k] = v
+    return out
+
+
+def _tool_start_fields(tool: Optional[str], args: Optional[dict]) -> dict:
+    """Descriptive fields for a TOOL_STARTED/TEST_STARTED/DEPLOY_STARTED event,
+    derived from the task's real ``tool_args``."""
+    args = args or {}
+    fields: dict = {"action": tool, "args": _safe_args(args)}
+    if tool in ("run_command", "run_tests") and args.get("command"):
+        fields["command"] = args["command"]
+    if tool == "run_tests":
+        fields["suite"] = args.get("command", "pytest -q")
+    if tool in ("read_file", "write_file", "list_dir") and args.get("path"):
+        fields["path"] = args["path"]
+        fields["target"] = args["path"]
+    if tool == "http_check" and args.get("url"):
+        fields["url"] = args["url"]
+    if tool == "deploy":
+        fields["environment"] = args.get("environment", "preview")
+    return fields
+
+
+# pytest summary line, e.g. "195 passed, 1 skipped in 3.4s" / "2 failed, 14 passed"
+_PYTEST_COUNT = re.compile(r"(\d+)\s+(passed|failed|skipped|error|errors|xfailed|xpassed)")
+
+
+def _parse_pytest(output: str) -> dict:
+    """Extract real pass/fail/skip counts and failing-test lines from pytest
+    output. Returns only what is actually present — no invented numbers."""
+    text = output or ""
+    counts: dict[str, int] = {}
+    for m in _PYTEST_COUNT.finditer(text):
+        n, kind = int(m.group(1)), m.group(2)
+        kind = "errors" if kind == "error" else kind
+        counts[kind] = counts.get(kind, 0) + n
+    passed = counts.get("passed")
+    failed = counts.get("failed", 0) + counts.get("errors", 0) or counts.get("failed")
+    skipped = counts.get("skipped")
+    fields: dict = {}
+    if passed is not None:
+        fields["passed"] = passed
+    if counts.get("failed") is not None or counts.get("errors"):
+        fields["failed"] = counts.get("failed", 0) + counts.get("errors", 0)
+    if skipped is not None:
+        fields["skipped"] = skipped
+    total = None
+    if passed is not None or fields.get("failed") is not None:
+        total = (passed or 0) + fields.get("failed", 0) + (skipped or 0)
+    if total:
+        fields["total"] = total
+    # Failing test identifiers (pytest prints "FAILED path::test - reason").
+    failures = [ln.strip() for ln in text.splitlines()
+                if ln.strip().startswith(("FAILED ", "ERROR "))][:10]
+    if failures:
+        fields["failures"] = failures
+    return fields
+
+
+def _memory_summary(mr) -> dict:
+    """Non-sensitive projection of a retrieved MemoryResult for the memory
+    panel. Surfaces id/scope/tags + a truncated content summary only — never
+    embeddings, user ids, or raw stored blobs."""
+    rec = mr.record
+    content = (rec.content or "").strip()
+    first_line = content.splitlines()[0] if content else ""
+    return {
+        "id": rec.id,
+        "similarity": round(float(mr.score), 4),
+        "scope": rec.scope.value,
+        "tags": list(rec.tags or []),
+        "title": (first_line[:120] + "…") if len(first_line) > 120 else first_line,
+        "previous_resolution": (content[:400] + "…") if len(content) > 400 else content,
+    }
+
+
+def _run_stats(history: list) -> dict:
+    """Aggregate honest execution statistics from the observed event history."""
+    tool_calls = sum(1 for e in history if e.type in (
+        EventType.TOOL_COMPLETED, EventType.TEST_PASSED, EventType.DEPLOY_COMPLETED))
+    recoveries = sum(1 for e in history if e.type == EventType.RECOVERY_STARTED)
+    files = {e.data.get("file") for e in history
+             if e.type == EventType.CODE_CHANGED and e.data.get("file")}
+    return {
+        "tool_calls": tool_calls,
+        "recoveries": recoveries,
+        "files_changed": len(files),
+    }
 
 
 class Orchestrator:
