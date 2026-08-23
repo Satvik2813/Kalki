@@ -24,7 +24,7 @@ export class KalkiMockAdapter {
 
     const mockSequence = [
       {
-        delay: 400,
+        delay: 800,
         event: {
           type: 'PLAN_CREATED',
           message: 'Created autonomous execution plan with 8 tasks',
@@ -48,7 +48,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 800,
+        delay: 2200,
         event: {
           type: 'TASK_STARTED',
           message: 'Task 01: Inspecting repository structure and auth modules',
@@ -57,7 +57,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 1200,
+        delay: 4000,
         event: {
           type: 'TOOL_STARTED',
           message: 'Executing tool: filesystem.read_dir (path="src/auth")',
@@ -66,7 +66,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 1600,
+        delay: 5500,
         event: {
           type: 'TOOL_COMPLETED',
           message: 'Filesystem inspect completed: Found auth.py, middleware.py, profile.py',
@@ -75,7 +75,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 2200,
+        delay: 7500,
         event: {
           type: 'MEMORY_RETRIEVED',
           message: 'SIMILAR ENGINEERING INCIDENT FOUND in vector memory (#037)',
@@ -93,7 +93,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 3000,
+        delay: 9500,
         event: {
           type: 'TEST_STARTED',
           message: 'Running unit test suite: pytest tests/test_auth.py',
@@ -102,7 +102,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 3800,
+        delay: 11500,
         event: {
           type: 'TEST_FAILED',
           message: '2 TESTS FAILED: test_token_expiration_skew & test_callback_refresh',
@@ -118,7 +118,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 4500,
+        delay: 13500,
         event: {
           type: 'TOOL_FAILED',
           message: 'Tool terminal.run_test failed: Non-zero exit code (1)',
@@ -127,7 +127,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 5200,
+        delay: 15500,
         event: {
           type: 'RECOVERY_STARTED',
           message: 'BOUNDED FAILURE RECOVERY ACTIVATED: Categorized failure as LOGIC_ERROR → Triggering dynamic replan',
@@ -140,7 +140,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 6000,
+        delay: 17500,
         event: {
           type: 'PLAN_REVISED',
           message: 'Plan revised (Revision 2): Adjusted task t-5 parameters with clock-skew fix',
@@ -149,7 +149,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 6800,
+        delay: 19500,
         event: {
           type: 'CODE_CHANGED',
           message: 'Applied code fix to auth/middleware.py (+14 lines, -4 lines)',
@@ -170,7 +170,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 7800,
+        delay: 21500,
         event: {
           type: 'TEST_STARTED',
           message: 'Re-running test suite after recovery patch...',
@@ -179,7 +179,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 8600,
+        delay: 23500,
         event: {
           type: 'TEST_PASSED',
           message: '16 / 16 TESTS PASSED: All authentication unit & integration tests clean! ✓',
@@ -188,7 +188,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 9400,
+        delay: 25500,
         event: {
           type: 'DEPLOY_STARTED',
           message: 'Deploying preview build to Vercel staging environment...',
@@ -197,7 +197,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 10200,
+        delay: 27500,
         event: {
           type: 'DEPLOY_COMPLETED',
           message: 'Preview deployment live! Build ✓ Health Check ✓ Smoke Test ✓',
@@ -206,7 +206,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 11000,
+        delay: 29500,
         event: {
           type: 'VERIFICATION_STARTED',
           message: 'Independent agent verification: Running production HTTP smoke tests...',
@@ -215,7 +215,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 11800,
+        delay: 31500,
         event: {
           type: 'VERIFICATION_COMPLETED',
           message: 'KALKI VERIFICATION SUCCESS: All 4 production smoke checks verified clean! ✓',
@@ -224,7 +224,7 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 12400,
+        delay: 33500,
         event: {
           type: 'MEMORY_STORED',
           message: 'Stored resolution experience in long-term engineering memory (INC-084)',
@@ -233,12 +233,12 @@ export class KalkiMockAdapter {
         }
       },
       {
-        delay: 13000,
+        delay: 35500,
         event: {
           type: 'OBJECTIVE_COMPLETED',
           message: 'OBJECTIVE ACCOMPLISHED: Authentication bug fixed, verified, deployed, and learned!',
           node: 'COMPLETED',
-          data: { status: 'completed', total_duration_s: 13.0 }
+          data: { status: 'completed', total_duration_s: 35.5 }
         }
       }
     ];
