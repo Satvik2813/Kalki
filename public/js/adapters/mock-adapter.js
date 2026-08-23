@@ -1,9 +1,9 @@
 /**
- * KALKI — Deterministic Mock Execution Adapter
- * 
- * Provides an impressive, real-time autonomous execution stream for hackathon judging,
- * demonstrating KALKI's closed-loop planning, tool use, memory retrieval, test-failure,
- * auto-recovery, deployment, and verification without requiring a live backend.
+ * KALKI — Deterministic Mock Execution Adapter (CertiMind demo)
+ *
+ * Simulates KALKI autonomously fixing a real defect in the CertiMind repo:
+ * per-class coverage gap in the Mondrian split-conformal calibrator, then
+ * redeploying to Render and verifying the live /predict endpoint.
  */
 
 export class KalkiMockAdapter {
@@ -12,13 +12,10 @@ export class KalkiMockAdapter {
     this.timer = null;
   }
 
-  /**
-   * Generates realistic mock event stream for an objective
-   */
   startMockExecution(objective, onEvent, onComplete) {
     this.stop();
     this.activeRunId = 'run-' + Math.random().toString(36).substring(2, 9);
-    
+
     let seq = 1;
     const now = () => new Date().toISOString().substring(11, 19);
 
@@ -27,21 +24,21 @@ export class KalkiMockAdapter {
         delay: 400,
         event: {
           type: 'PLAN_CREATED',
-          message: 'Created autonomous execution plan with 8 tasks',
+          message: 'Created autonomous execution plan with 8 tasks for CertiMind',
           node: 'PLAN',
           data: {
             plan: {
               objective,
               revision: 1,
               tasks: [
-                { id: 't-1', description: 'Inspect repository structure & auth module', status: 'pending', tool: 'filesystem' },
-                { id: 't-2', description: 'Locate JWT token validation middleware', status: 'pending', tool: 'filesystem' },
-                { id: 't-3', description: 'Query engineering memory for callback incidents', status: 'pending', tool: 'memory' },
-                { id: 't-4', description: 'Execute unit test suite to reproduce issue', status: 'pending', tool: 'terminal' },
-                { id: 't-5', description: 'Apply expiration margin fix to auth middleware', status: 'pending', tool: 'code_edit' },
-                { id: 't-6', description: 'Re-run verification & integration tests', status: 'pending', tool: 'terminal' },
-                { id: 't-7', description: 'Trigger preview deployment to Vercel', status: 'pending', tool: 'deploy' },
-                { id: 't-8', description: 'Perform production smoke test verification', status: 'pending', tool: 'verifier' }
+                { id: 't-1', description: 'Inspect CertiMind repo — locate calibration & ensemble modules',    status: 'pending', tool: 'filesystem' },
+                { id: 't-2', description: 'Read Mondrian split-conformal calibrator (per-class quantiles)',   status: 'pending', tool: 'filesystem' },
+                { id: 't-3', description: 'Query engineering memory for coverage-fairness incidents',         status: 'pending', tool: 'memory' },
+                { id: 't-4', description: 'Run coverage evaluation: pytest tests/test_calibration.py',        status: 'pending', tool: 'terminal' },
+                { id: 't-5', description: 'Patch Mondrian quantile clamp for Personality-disorder class',     status: 'pending', tool: 'code_edit' },
+                { id: 't-6', description: 'Re-run calibration + ensemble tests with 5 random seeds',          status: 'pending', tool: 'terminal' },
+                { id: 't-7', description: 'Trigger Render deploy hook & wait for build',                      status: 'pending', tool: 'deploy' },
+                { id: 't-8', description: 'Verify /predict endpoint returns Mondrian sets with fixed coverage', status: 'pending', tool: 'verifier' }
               ]
             }
           }
@@ -51,7 +48,7 @@ export class KalkiMockAdapter {
         delay: 800,
         event: {
           type: 'TASK_STARTED',
-          message: 'Task 01: Inspecting repository structure and auth modules',
+          message: 'Task 01: Inspecting CertiMind repository structure',
           node: 'INSPECT',
           data: { task_id: 't-1', tool: 'filesystem' }
         }
@@ -60,34 +57,38 @@ export class KalkiMockAdapter {
         delay: 1200,
         event: {
           type: 'TOOL_STARTED',
-          message: 'Executing tool: filesystem.read_dir (path="src/auth")',
+          message: 'Executing tool: filesystem.read_dir (path="src/calibration")',
           node: 'INSPECT',
-          data: { tool: 'filesystem', args: { path: 'src/auth' } }
+          data: { tool: 'filesystem', args: { path: 'src/calibration' } }
         }
       },
       {
         delay: 1600,
         event: {
           type: 'TOOL_COMPLETED',
-          message: 'Filesystem inspect completed: Found auth.py, middleware.py, profile.py',
+          message: 'Repo scan complete: mondrian.py, split_conformal.py, ensemble.py, coverage_report.py',
           node: 'INSPECT',
-          data: { tool: 'filesystem', duration_ms: 180, output: ['auth.py', 'middleware.py', 'profile.py'] }
+          data: {
+            tool: 'filesystem',
+            duration_ms: 172,
+            output: ['mondrian.py', 'split_conformal.py', 'ensemble.py', 'coverage_report.py']
+          }
         }
       },
       {
         delay: 2200,
         event: {
           type: 'MEMORY_RETRIEVED',
-          message: 'SIMILAR ENGINEERING INCIDENT FOUND in vector memory (#037)',
+          message: 'SIMILAR ENGINEERING INCIDENT FOUND in vector memory (#052)',
           node: 'INSPECT',
           data: {
             memory: {
-              incident_id: 'INC-037',
-              title: 'Authentication callback token expiration mismatch',
-              similarity: 0.91,
+              incident_id: 'INC-052',
+              title: 'Mondrian per-class coverage disparity under class imbalance',
+              similarity: 0.93,
               scope: 'long_term',
-              previous_resolution: 'Configured clock-skew tolerance window (60s margin) in JWT verify header.',
-              decision_impact: 'Applying previous resolution as supporting evidence for fix plan.'
+              previous_resolution: 'Applied minimum-sample floor + Beta-CDF quantile inflation to rare classes; pooled α distributed via Mondrian partition.',
+              decision_impact: 'Using prior resolution as blueprint — will inflate the empirical quantile only for classes with support < 200.'
             }
           }
         }
@@ -96,23 +97,23 @@ export class KalkiMockAdapter {
         delay: 3000,
         event: {
           type: 'TEST_STARTED',
-          message: 'Running unit test suite: pytest tests/test_auth.py',
+          message: 'Running calibration evaluation: pytest tests/test_calibration.py -q',
           node: 'TEST',
-          data: { suite: 'auth_suite', total_tests: 16 }
+          data: { suite: 'calibration_suite', total_tests: 21 }
         }
       },
       {
         delay: 3800,
         event: {
           type: 'TEST_FAILED',
-          message: '2 TESTS FAILED: test_token_expiration_skew & test_callback_refresh',
+          message: '2 TESTS FAILED: test_mondrian_per_class_coverage & test_rare_class_coverage_floor',
           node: 'DEBUG',
           data: {
             failed_count: 2,
-            passed_count: 14,
+            passed_count: 19,
             failures: [
-              'TokenExpiredError: Signature has expired (skew delta: +4s > limit 0s)',
-              'CallbackError: Invalid session context during refresh handoff'
+              'AssertionError: Personality disorder coverage = 0.62, expected ≥ 0.90 (α=0.10)',
+              'AssertionError: Bipolar coverage = 0.81, expected ≥ 0.90 (α=0.10)'
             ]
           }
         }
@@ -123,19 +124,19 @@ export class KalkiMockAdapter {
           type: 'TOOL_FAILED',
           message: 'Tool terminal.run_test failed: Non-zero exit code (1)',
           node: 'DEBUG',
-          data: { tool: 'terminal', failure_class: 'logic_error', error: 'Test suite failure detected' }
+          data: { tool: 'terminal', failure_class: 'calibration_error', error: 'Mondrian coverage under target for 2 rare classes' }
         }
       },
       {
         delay: 5200,
         event: {
           type: 'RECOVERY_STARTED',
-          message: 'BOUNDED FAILURE RECOVERY ACTIVATED: Categorized failure as LOGIC_ERROR → Triggering dynamic replan',
+          message: 'BOUNDED FAILURE RECOVERY ACTIVATED: Categorized failure as CALIBRATION_ERROR → Triggering dynamic replan',
           node: 'RECOVERING',
           data: {
             recovery_stage: 'DIAGNOSING',
             strategy: 'REPLAN_WITH_MEMORY',
-            action: 'Modify middleware.py to add 60s skew tolerance based on INC-037'
+            action: 'Patch src/calibration/mondrian.py — apply Beta-CDF quantile inflation for classes with n_cal < 200 (INC-052 pattern)'
           }
         }
       },
@@ -143,7 +144,7 @@ export class KalkiMockAdapter {
         delay: 6000,
         event: {
           type: 'PLAN_REVISED',
-          message: 'Plan revised (Revision 2): Adjusted task t-5 parameters with clock-skew fix',
+          message: 'Plan revised (Revision 2): Task t-5 parameters updated with per-class quantile-inflation fix',
           node: 'RECOVERING',
           data: { revision: 2 }
         }
@@ -152,20 +153,26 @@ export class KalkiMockAdapter {
         delay: 6800,
         event: {
           type: 'CODE_CHANGED',
-          message: 'Applied code fix to auth/middleware.py (+14 lines, -4 lines)',
+          message: 'Applied code fix to src/calibration/mondrian.py (+18 lines, -3 lines)',
           node: 'CODE',
           data: {
-            file: 'src/auth/middleware.py',
-            summary: 'Added 60s clock skew tolerance to PyJWT verify context',
-            diff: `@@ -42,7 +42,12 @@ def verify_jwt_token(token: str):
--    payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-+    payload = jwt.decode(
-+        token, 
-+        SECRET_KEY, 
-+        algorithms=["HS256"],
-+        leeway=60  # Added 60s clock-skew margin per INC-037
-+    )
-     return payload`
+            file: 'src/calibration/mondrian.py',
+            summary: 'Per-class quantile inflation via Beta-CDF for low-support classes; guarantees ≥1-α coverage under imbalance',
+            diff: `@@ -47,9 +47,24 @@ class MondrianConformalCalibrator:
+-    def quantile(self, scores, alpha):
+-        n = len(scores)
+-        q_level = np.ceil((n + 1) * (1 - alpha)) / n
+-        return np.quantile(scores, min(q_level, 1.0), method="higher")
++    def quantile(self, scores, alpha, class_id=None):
++        n = len(scores)
++        # Finite-sample correction (Vovk 2005)
++        q_level = np.ceil((n + 1) * (1 - alpha)) / n
++        # Per-class inflation for low-support classes (INC-052)
++        if class_id is not None and n < self.MIN_SUPPORT:
++            # Beta-CDF inflation restores nominal coverage under imbalance
++            q_level = beta.ppf(1 - alpha, n - int(alpha * (n + 1)), int(alpha * (n + 1)) + 1)
++            q_level = min(q_level, 1.0)
++        return np.quantile(scores, min(q_level, 1.0), method="higher")`
           }
         }
       },
@@ -173,52 +180,52 @@ export class KalkiMockAdapter {
         delay: 7800,
         event: {
           type: 'TEST_STARTED',
-          message: 'Re-running test suite after recovery patch...',
+          message: 'Re-running calibration suite across 5 seeds after recovery patch...',
           node: 'TEST',
-          data: { suite: 'auth_suite' }
+          data: { suite: 'calibration_suite' }
         }
       },
       {
         delay: 8600,
         event: {
           type: 'TEST_PASSED',
-          message: '16 / 16 TESTS PASSED: All authentication unit & integration tests clean! ✓',
+          message: '21 / 21 TESTS PASSED: All 7 classes at ≥ 0.90 coverage (α=0.10) across 5 seeds ✓',
           node: 'TEST',
-          data: { total: 16, passed: 16, failed: 0 }
+          data: { total: 21, passed: 21, failed: 0 }
         }
       },
       {
         delay: 9400,
         event: {
           type: 'DEPLOY_STARTED',
-          message: 'Deploying preview build to Vercel staging environment...',
+          message: 'Triggering Render deploy hook for CertiMind service...',
           node: 'DEPLOY',
-          data: { target: 'preview', environment: 'https://kalki-auth-fix.vercel.app' }
+          data: { target: 'production', environment: 'https://certimind.onrender.com/' }
         }
       },
       {
         delay: 10200,
         event: {
           type: 'DEPLOY_COMPLETED',
-          message: 'Preview deployment live! Build ✓ Health Check ✓ Smoke Test ✓',
+          message: 'Render deployment live! Docker build ✓ Health probe ✓ Cold-start ✓',
           node: 'DEPLOY',
-          data: { status: 'live', url: 'https://kalki-auth-fix.vercel.app' }
+          data: { status: 'live', url: 'https://certimind.onrender.com/' }
         }
       },
       {
         delay: 11000,
         event: {
           type: 'VERIFICATION_STARTED',
-          message: 'Independent agent verification: Running production HTTP smoke tests...',
+          message: 'Independent agent verification: probing /predict on production...',
           node: 'VERIFY',
-          data: { checks: ['health_endpoint', 'token_issue', 'token_refresh', 'skew_boundary'] }
+          data: { checks: ['health_endpoint', 'predict_shape', 'mondrian_coverage', 'rare_class_prediction_set'] }
         }
       },
       {
         delay: 11800,
         event: {
           type: 'VERIFICATION_COMPLETED',
-          message: 'KALKI VERIFICATION SUCCESS: All 4 production smoke checks verified clean! ✓',
+          message: 'KALKI VERIFICATION SUCCESS: All 4 production checks verified clean — coverage restored ✓',
           node: 'VERIFY',
           data: { verified: true, score: 1.0 }
         }
@@ -227,16 +234,16 @@ export class KalkiMockAdapter {
         delay: 12400,
         event: {
           type: 'MEMORY_STORED',
-          message: 'Stored resolution experience in long-term engineering memory (INC-084)',
+          message: 'Stored resolution experience in long-term engineering memory (INC-089)',
           node: 'LEARN',
-          data: { memory_id: 'INC-084', tags: ['auth', 'jwt', 'leeway', 'recovery'] }
+          data: { memory_id: 'INC-089', tags: ['certimind', 'conformal', 'mondrian', 'coverage', 'imbalance', 'render'] }
         }
       },
       {
         delay: 13000,
         event: {
           type: 'OBJECTIVE_COMPLETED',
-          message: 'OBJECTIVE ACCOMPLISHED: Authentication bug fixed, verified, deployed, and learned!',
+          message: 'OBJECTIVE ACCOMPLISHED: CertiMind Mondrian coverage gap fixed, verified live on Render, and learned!',
           node: 'COMPLETED',
           data: { status: 'completed', total_duration_s: 13.0 }
         }

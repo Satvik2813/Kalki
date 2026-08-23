@@ -73,7 +73,7 @@ export class DeployPanel {
 
           <div style="margin-top: 14px; background: rgba(63, 185, 80, 0.08); border: 1px solid var(--color-success-border); padding: 12px; border-radius: var(--radius-xs); display: flex; align-items: center; justify-content: space-between;">
             <div class="font-mono" style="font-size: 12px; color: var(--color-success);">
-              Deployment URL: <a href="https://kalki-auth-fix.vercel.app" target="_blank" style="color: var(--accent-cyan); text-decoration: none; font-weight: 600;">https://kalki-auth-fix.vercel.app</a>
+              Deployment URL: <a href="https://certimind.onrender.com/" target="_blank" style="color: var(--accent-cyan); text-decoration: none; font-weight: 600;">https://certimind.onrender.com/</a>
             </div>
             <span class="badge badge-success">VERIFIED</span>
           </div>

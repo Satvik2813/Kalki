@@ -41,7 +41,7 @@ export class MemoryPanel {
           </div>
 
           <div style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-            ${m.incident_id || 'Incident #037'}: ${m.title || 'Authentication callback token expiration mismatch'}
+            ${m.incident_id || 'Incident #052'}: ${m.title || 'Mondrian per-class coverage disparity under class imbalance'}
           </div>
 
           <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">

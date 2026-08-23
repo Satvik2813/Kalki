@@ -612,9 +612,12 @@
                   <button id="btn-pair-local" class="btn-link text-xs">Pair Current</button>
                 </div>
                 <div id="local-projects-list" class="sidebar-item-list">
-                  <div class="sidebar-item active" data-context="local" data-name="Kalki">
-                    <span class="item-name">📁 Kalki (Current Workspace)</span>
+                  <div class="sidebar-item active" data-context="local" data-name="CertiMind">
+                    <span class="item-name">📁 CertiMind (Target Repo)</span>
                     <span class="badge badge-sm badge-info">active</span>
+                  </div>
+                  <div class="sidebar-item" data-context="local" data-name="Kalki">
+                    <span class="item-name">📁 Kalki (Workspace)</span>
                   </div>
                   <div id="local-uploaded-list"></div>
                 </div>
@@ -647,11 +650,11 @@
           <div id="active-project-bar" class="active-project-bar glass-panel mb-3">
             <div class="project-indicator">
               <span class="text-xs text-muted">TARGET CONTEXT:</span>
-              <span id="active-project-name" class="font-bold text-accent">Kalki</span>
-              <span id="active-project-badge" class="badge badge-sm badge-info">local</span>
+              <span id="active-project-name" class="font-bold text-accent">CertiMind</span>
+              <span id="active-project-badge" class="badge badge-sm badge-info">render</span>
             </div>
             <div class="project-stats text-xs text-muted">
-              <span>Environment: <strong id="active-env-label">Local Sandbox</strong></span>
+              <span>Environment: <strong id="active-env-label">certimind.onrender.com</strong></span>
               <span class="ml-3">Branch: <strong id="active-branch-name">main</strong></span>
             </div>
           </div>
@@ -710,8 +713,8 @@
 
   </div>
 
-  <!-- Entry Script -->
-  <script type="module" src="js/app.js"></script>
+  <!-- Entry Script (cache-busting version for dev) -->
+  <script type="module" src="js/app.js?v=certimind-1"></script>
 
   <!-- Floating bottom-right Sign Out button (fixed, always visible) -->
   <button id="btn-logout" type="button" title="Sign out of KALKI">

@@ -17,8 +17,8 @@ export function renderObjectiveInput(container, options = {}) {
           id="objective-text-input" 
           class="objective-input" 
           rows="2"
-          placeholder="Describe engineering objective (e.g. Fix authentication token expiration bug, run tests, and verify production)..."
-        >Fix authentication token expiration bug, run tests, and verify production.</textarea>
+          placeholder="Describe engineering objective (e.g. Fix Mondrian per-class coverage gap in CertiMind and redeploy to Render)..."
+        >Fix the Mondrian per-class coverage gap on the Personality-disorder class in CertiMind, re-run calibration tests, and redeploy to Render.</textarea>
         <button id="start-kalki-btn" class="btn btn-accent btn-large flex-center gap-2">
           <span>START KALKI</span>
           <span>→</span>
